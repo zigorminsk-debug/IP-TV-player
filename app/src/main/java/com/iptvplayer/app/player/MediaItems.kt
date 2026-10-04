@@ -25,6 +25,7 @@ object MediaItems {
         }
         return MediaItem.Builder()
             .setUri(request.url)
+            .setHttpRequestHeaders(request.headers)
             .setRequestMetadata(MediaItem.RequestMetadata.Builder().setExtras(extras).build())
             .setMediaMetadata(
                 MediaMetadata.Builder()
