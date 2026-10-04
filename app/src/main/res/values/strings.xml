@@ -34,6 +34,7 @@
     <!-- Playlists -->
     <string name="playlists">Playlists</string>
     <string name="add_playlist">Add playlist</string>
+    <string name="open_playlist_file">Open playlist file</string>
     <string name="playlists_empty_title">No playlists yet</string>
     <string name="playlists_empty_hint">The app does not include any content. Add your own M3U playlist or Xtream Codes account to start watching.</string>
     <string name="playlist_type_m3u">M3U</string>

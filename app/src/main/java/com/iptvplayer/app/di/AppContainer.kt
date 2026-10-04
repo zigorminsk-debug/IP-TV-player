@@ -40,7 +40,7 @@ class AppContainer(context: Context) {
     }
 
     val settings: SettingsRepository by lazy { SettingsRepository(appContext) }
-    val playlists: PlaylistRepository by lazy { PlaylistRepository(db, http, json) }
+    val playlists: PlaylistRepository by lazy { PlaylistRepository(db, http, json, context) }
     val epg: EpgRepository by lazy { EpgRepository(db, http, json, playlists) }
     val progress: ProgressRepository by lazy { ProgressRepository(db) }
     val updates: UpdateRepository by lazy { UpdateRepository(appContext, http, json, settings) }

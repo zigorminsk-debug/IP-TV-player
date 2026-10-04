@@ -1,6 +1,9 @@
 package com.iptvplayer.app.ui.screens.playlists
 
 import android.app.Application
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import android.net.Uri
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -31,6 +34,7 @@ import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Link
+import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -89,6 +93,16 @@ class PlaylistsViewModel(app: Application) : AndroidViewModel(app) {
 
     val refreshStates = c.playlists.refreshStates
 
+    fun addPlaylistFile(uri: Uri, onDone: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            val name = uri.lastPathSegment?.substringAfterLast('/')?.substringBeforeLast('.')?.ifBlank { "Playlist" } ?: "Playlist"
+            val id = c.playlists.addPlaylist(PlaylistRepository.NewPlaylist(name, PlaylistType.M3U, uri.toString()))
+            val result = c.playlists.refresh(id)
+            c.settings.setLastPlaylist(id)
+            onDone(result.isSuccess)
+        }
+    }
+
     fun addPlaylist(data: PlaylistRepository.NewPlaylist, onDone: (Boolean) -> Unit) {
         viewModelScope.launch {
             val id = c.playlists.addPlaylist(data)
@@ -126,12 +140,18 @@ fun PlaylistsScreen(navController: NavHostController) {
     var showAdd by rememberSaveable { mutableStateOf(false) }
     var editTarget by remember { mutableStateOf<PlaylistEntity?>(null) }
     var deleteTarget by remember { mutableStateOf<PlaylistEntity?>(null) }
+    val fileLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        uri?.let { vm.addPlaylistFile(it) { } }
+    }
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.app_name)) },
                 actions = {
+                    IconButton(onClick = { fileLauncher.launch(arrayOf("audio/x-mpegurl", "application/octet-stream", "text/plain")) }) {
+                        Icon(Icons.Filled.FolderOpen, contentDescription = stringResource(R.string.open_playlist_file))
+                    }
                     IconButton(onClick = { navController.navigate(Routes.SETTINGS) }) {
                         Icon(
                             Icons.Filled.Settings,

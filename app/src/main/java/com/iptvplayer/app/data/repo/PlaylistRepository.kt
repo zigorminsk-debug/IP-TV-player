@@ -1,5 +1,6 @@
 package com.iptvplayer.app.data.repo
 
+import android.content.Context
 import androidx.room.withTransaction
 import com.iptvplayer.app.data.db.AppDatabase
 import com.iptvplayer.app.data.db.CategoryEntity
@@ -31,6 +32,7 @@ class PlaylistRepository(
     private val db: AppDatabase,
     private val http: OkHttpClient,
     json: Json,
+    private val context: Context,
 ) {
     private val playlistDao = db.playlistDao()
     private val categoryDao = db.categoryDao()
@@ -214,7 +216,13 @@ class PlaylistRepository(
     private suspend fun refreshM3u(pl: PlaylistEntity): RefreshResult {
         val tmp = File.createTempFile("iptv-playlist", ".m3u")
         try {
-            Http.downloadToFile(http, pl.url, tmp)
+            if (pl.url.startsWith("content://")) {
+                context.contentResolver.openInputStream(android.net.Uri.parse(pl.url))?.use { input ->
+                    tmp.outputStream().use { output -> input.copyTo(output) }
+                } ?: error("Cannot open playlist file")
+            } else {
+                Http.downloadToFile(http, pl.url, tmp)
+            }
             val parsed = M3uParser.parse(tmp.inputStream())
             val oldChannels = channelDao.forPlaylist(pl.id).associateBy { it.uid }
             val oldCategories = categoryDao.forPlaylist(pl.id).associateBy { it.uid }
