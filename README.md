@@ -68,7 +68,25 @@ cd IP-TV-player
 
 **Сборка в облаке**: каждый push автоматически собирается GitHub Actions
 (тесты → debug/release APK → AAB, см. [docs/03-CI-CD.md](docs/03-CI-CD.md)).
-Релиз создаётся автоматически по тегу `vX.Y.Z` — см. [docs/04-RELEASE.md](docs/04-RELEASE.md).
+
+## Версии и релизы
+
+```
+versionName = МАЖОР.МИНОР.<НОМЕР РЕЛИЗА>     1.0.2  =  релиз #2
+versionCode = номер сборки CI (run_number)    39
+```
+
+Patch-компонента версии — это порядковый номер релиза, поэтому каждому
+[GitHub Release](https://github.com/zigorminsk-debug/IP-TV-player/releases)
+соответствует ровно одна версия приложения: `v1.0.2 — релиз #2 (сборка 39)`.
+В приложении номер виден в «Настройки → О приложении»: `1.0.2 (релиз 2 · сборка 39)`.
+
+- База версии хранится в [`version.properties`](version.properties), номер
+  релиза вычисляет [`scripts/version.sh`](scripts/version.sh) по тегам `vX.Y.Z`;
+- релиз публикуется автоматически при мерже в `main` (или по тегу `vX.Y.Z`);
+- история всех релизов — в таблице [CHANGELOG.md](CHANGELOG.md), её ведёт CI.
+
+Подробности: [docs/04-RELEASE.md](docs/04-RELEASE.md).
 
 ## Документация
 
@@ -106,9 +124,10 @@ cd IP-TV-player
 IP-TV Player is an open-source Android IPTV player (a Televizo-style app): it
 plays **your own** M3U playlists and Xtream Codes accounts, supports XMLTV EPG,
 catch-up archives, favorites, parental control, Chromecast, PiP, Android TV and
-in-app self-updates from GitHub Releases. CI builds every push; every build gets
-an auto-incremented build number (`versionCode` = GitHub Actions run number);
-releases are created automatically from `vX.Y.Z` tags and signed with a
-persistent key so updates install over the previous version. See `docs/` (in
+in-app self-updates from GitHub Releases. CI builds every push; versions follow
+`major.minor.<release number>` (so `1.0.2` is release #2) while `versionCode`
+is the auto-incremented GitHub Actions run number. Releases are published
+automatically on every merge to `main` (or from a `vX.Y.Z` tag) and signed with
+a persistent key so updates install over the previous version. See `docs/` (in
 Russian) for architecture, CI/CD, release process, key management and a
 continuation guide.

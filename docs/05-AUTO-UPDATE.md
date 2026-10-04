@@ -8,7 +8,8 @@
    `https://github.com/<owner>/<repo>/releases/latest/download/app-update.json`
    (запасной путь — GitHub API `releases/latest`, если прямой редирект недоступен).
 2. Если `versionCode` из манифеста **больше** установленного — показывается
-   диалог: версия, номер сборки, примечания к релизу, кнопка «Скачать».
+   диалог: версия, номер релиза, номер сборки, примечания к релизу, кнопка
+   «Скачать».
 3. APK скачивается в кэш приложения с прогрессом, проверяется **SHA-256**
    (и размер) из манифеста.
 4. Запускается системный установщик: APK устанавливается **поверх** текущей
@@ -29,18 +30,23 @@
 ```json
 {
   "versionCode": 57,                       // критерий обновления; только растёт
-  "versionName": "1.1.0",
+  "versionName": "1.0.7",                  // мажор.минор.<номер релиза>
+  "releaseNumber": 7,                      // порядковый номер релиза (= patch)
   "buildNumber": 57,                       // = versionCode (номер сборки CI)
-  "apkUrl": "https://github.com/<owner>/<repo>/releases/download/v1.1.0/IP-TV-Player_1.1.0_build57_release.apk",
+  "apkUrl": "https://github.com/<owner>/<repo>/releases/download/v1.0.7/IP-TV-Player_1.0.7_build57_release.apk",
   "apkSize": 39116810,                     // байт, опционально (проверка размера)
   "apkSha256": "ab12…",                    // опционально (проверка целостности)
-  "releaseNotes": "Что нового: …",         // текст аннотации тега
+  "releaseNotes": "Что нового: …",         // аннотация тега или сообщение коммита
   "releaseDate": "2026-10-04T12:00:00+00:00",
   "minSdk": 23,                            // опционально
   "repo": "zigorminsk-debug/IP-TV-player", // информационное
-  "tag": "v1.1.0"
+  "tag": "v1.0.7"
 }
 ```
+
+`releaseNumber` добавлен в релизе #2; старые приложения просто игнорируют поле
+(критерием обновления остаётся `versionCode`), а новые показывают его в диалоге:
+«Доступна версия 1.0.7 (релиз 7 · сборка 57)».
 
 Соответствующий класс: `UpdateRepository.UpdateManifest`
 (`app/src/main/java/com/iptvplayer/app/data/repo/UpdateRepository.kt`) —
@@ -51,7 +57,7 @@
 | Компонент | Роль |
 |---|---|
 | `scripts/make_update_manifest.py` | собирает манифест при релизе (CI) |
-| CI workflow (тег `v*`) | публикует манифест вместе с APK в GitHub Release |
+| CI workflow (push в `main` / тег `v*`) | публикует манифест вместе с APK в GitHub Release |
 | `UpdateRepository` | проверка, скачивание, верификация, установка |
 | `AppViewModel` + `UpdateDialogs` (ui/AppRoot.kt) | диалоги обновления |
 | Настройки | вкл/выкл авто-проверки, смена канала обновлений |

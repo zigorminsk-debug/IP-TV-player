@@ -206,6 +206,7 @@ fun UpdateDialogs(appVm: AppViewModel) {
                         stringResource(
                             R.string.update_available_title,
                             s.manifest.versionName,
+                            s.manifest.releaseNumber,
                             s.manifest.buildNumber,
                         ),
                     )
@@ -216,6 +217,7 @@ fun UpdateDialogs(appVm: AppViewModel) {
                             stringResource(
                                 R.string.update_current_version,
                                 s.currentVersionName,
+                                s.currentReleaseNumber,
                                 s.currentVersionCode,
                             ),
                         )

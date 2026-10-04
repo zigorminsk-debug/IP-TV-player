@@ -1,6 +1,7 @@
 # Gradle
 .gradle/
 build/
+.kotlin/
 
 # Android Studio / IntelliJ
 .idea/
@@ -12,8 +13,17 @@ captures/
 # Local configuration (SDK path etc.)
 local.properties
 
+# CI / release artifacts (собираются заново, в гит не попадают)
+dist/
+ci-logs/
+build-output.log
+*.log
+
 # OS
 .DS_Store
+Thumbs.db
 
 # NOTE: keystore/ is intentionally NOT ignored — it contains the public
 # release signing key used by CI. See docs/06-SIGNING-KEYS.md.
+# NOTE: version.properties IS tracked — it is the single source of the
+# version/release number. See docs/04-RELEASE.md.

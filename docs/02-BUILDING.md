@@ -36,18 +36,26 @@
 
 ## Нумерация версий локально
 
-По умолчанию (`app/build.gradle.kts`): `versionCode = 1`,
-`versionName = "1.0.0-dev"`. Можно задать явно:
+Версия собирается по схеме `МАЖОР.МИНОР.<номер релиза>`; база хранится в
+[`version.properties`](../version.properties). Локально по умолчанию получается
+`versionCode = 1`, `versionName = "1.0.<LAST_RELEASE>-dev"`. Можно задать явно:
 
 ```bash
-./gradlew assembleRelease -PAPP_VERSION_CODE=123 -PAPP_VERSION_NAME=1.2.3
+./gradlew assembleRelease -PAPP_VERSION_CODE=123 -PAPP_VERSION_NAME=1.2.3 -PAPP_RELEASE_NUMBER=3
 # или через переменные окружения:
-APP_VERSION_CODE=123 APP_VERSION_NAME=1.2.3 ./gradlew assembleRelease
+APP_VERSION_CODE=123 APP_VERSION_NAME=1.2.3 APP_RELEASE_NUMBER=3 ./gradlew assembleRelease
+
+# что получится при текущих настройках:
+./gradlew -q :app:printVersion
+scripts/version.sh --mode next     # номер следующего релиза
 ```
 
-Приоритет: переменные окружения → gradle-свойства → значения по умолчанию.
-**CI всегда передаёт `APP_VERSION_CODE` = номер запуска workflow** — так каждый
-артефакт получает уникальный номер сборки (см. [03-CI-CD.md](03-CI-CD.md)).
+Приоритет: переменные окружения → gradle-свойства → `version.properties`.
+`APP_RELEASE_NUMBER` можно не указывать — по умолчанию берётся patch-компонента
+версии. **CI всегда передаёт `APP_VERSION_CODE` = номер запуска workflow** — так
+каждый артефакт получает уникальный номер сборки (см. [03-CI-CD.md](03-CI-CD.md)),
+и `APP_VERSION_NAME`/`APP_RELEASE_NUMBER` — номер релиза
+(см. [04-RELEASE.md](04-RELEASE.md)).
 
 ## Подпись
 

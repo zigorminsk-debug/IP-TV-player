@@ -37,6 +37,8 @@ class UpdateRepository(
     data class UpdateManifest(
         val versionCode: Int = 0,
         val versionName: String = "",
+        /** Sequential release number; equals the patch component of versionName. */
+        val releaseNumber: Int = 0,
         val buildNumber: Int = 0,
         val apkUrl: String = "",
         val apkSize: Long = 0,
@@ -53,6 +55,7 @@ class UpdateRepository(
             val manifest: UpdateManifest,
             val currentVersionName: String,
             val currentVersionCode: Int,
+            val currentReleaseNumber: Int,
         ) : UpdateState()
 
         data object UpToDate : UpdateState()
@@ -92,6 +95,9 @@ class UpdateRepository(
         BuildConfig.BUILD_NUMBER
     }
 
+    /** Sequential release number this build was produced from. */
+    fun currentReleaseNumber(): Int = BuildConfig.RELEASE_NUMBER
+
     fun currentVersionName(): String = try {
         context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: "?"
     } catch (e: Exception) {
@@ -116,7 +122,12 @@ class UpdateRepository(
             if (manifest == null || manifest.apkUrl.isBlank()) {
                 UpdateState.UpToDate
             } else if (manifest.versionCode > currentVersionCode()) {
-                UpdateState.Available(manifest, currentVersionName(), currentVersionCode())
+                UpdateState.Available(
+                    manifest,
+                    currentVersionName(),
+                    currentVersionCode(),
+                    currentReleaseNumber(),
+                )
             } else {
                 UpdateState.UpToDate
             }

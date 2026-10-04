@@ -311,6 +311,7 @@ fun SettingsScreen(navController: NavHostController, appVm: AppViewModel) {
                     subtitle = stringResource(
                         R.string.version_fmt,
                         BuildConfig.VERSION_NAME,
+                        BuildConfig.RELEASE_NUMBER,
                         BuildConfig.BUILD_NUMBER,
                     ),
                     onClick = { vm.checkUpdate() },
@@ -366,6 +367,7 @@ fun SettingsScreen(navController: NavHostController, appVm: AppViewModel) {
                         text = stringResource(
                             R.string.version_fmt,
                             BuildConfig.VERSION_NAME,
+                            BuildConfig.RELEASE_NUMBER,
                             BuildConfig.BUILD_NUMBER,
                         ),
                         style = MaterialTheme.typography.bodySmall,
