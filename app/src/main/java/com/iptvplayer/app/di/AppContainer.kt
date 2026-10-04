@@ -5,6 +5,7 @@ import android.content.Context
 import androidx.room.Room
 import com.iptvplayer.app.data.db.AppDatabase
 import com.iptvplayer.app.data.remote.Http
+import com.iptvplayer.app.data.repo.BackupManager
 import com.iptvplayer.app.data.repo.EpgRepository
 import com.iptvplayer.app.data.repo.PlaylistRepository
 import com.iptvplayer.app.data.repo.ProgressRepository

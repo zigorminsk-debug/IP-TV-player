@@ -93,8 +93,10 @@ class SeriesViewModel(app: Application, savedState: SavedStateHandle) : AndroidV
                     loading.value = true
                     runCatching { c.playlists.xtreamClient.getSeriesInfo(account!!, seriesId) }
                         .onSuccess { series ->
-                            info.value = series
-                            selectedSeason.value = series.seasons.keys.firstOrNull()
+                            if (series != null) {
+                                info.value = series
+                                selectedSeason.value = series.seasons.keys.firstOrNull()
+                            }
                         }
                         .onFailure { error.value = it.message ?: "load error" }
                     loading.value = false

@@ -97,7 +97,7 @@ object TrackSelections {
     }
 
     private fun hasManualOverride(player: Player, type: Int): Boolean =
-        player.trackSelectionParameters.overridesOfType(type).isNotEmpty()
+        player.trackSelectionParameters.overrides.values.any { it.type == type }
 
     private fun titleFor(type: Int): String = when (type) {
         C.TRACK_TYPE_VIDEO -> "VIDEO"

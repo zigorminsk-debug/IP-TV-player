@@ -260,6 +260,7 @@ fun ChannelsScreen(playlistId: Long, navController: NavHostController) {
     var infoChannel by remember { mutableStateOf<ChannelEntity?>(null) }
     var resumeFor by remember { mutableStateOf<Pair<ChannelEntity, WatchProgressEntity>?>(null) }
     var sortMenuOpen by remember { mutableStateOf(false) }
+    var pinCategory by remember { mutableStateOf<CategoryEntity?>(null) }
 
     val isXc = playlist?.type == PlaylistType.XTREAM.name
     val kindTabs = remember {
@@ -395,7 +396,7 @@ fun ChannelsScreen(playlistId: Long, navController: NavHostController) {
                         selected = kind == k,
                         onClick = { vm.setKind(k) },
                         text = { Text(stringResource(labelRes)) },
-                        leadingIcon = { Icon(icon, contentDescription = null) },
+                        icon = { Icon(icon, contentDescription = null) },
                     )
                 }
             }
@@ -676,6 +677,16 @@ private fun ChannelRowItem(
             Spacer(Modifier.width(6.dp))
         }
         if (showLock) {
+            Icon(
+                Icons.Filled.Lock,
+                contentDescription = stringResource(R.string.locked),
+                tint = MaterialTheme.colorScheme.error,
+                modifier = Modifier.size(18.dp),
+            )
+        }
+    }
+}
+showLock) {
             Icon(
                 Icons.Filled.Lock,
                 contentDescription = stringResource(R.string.locked),

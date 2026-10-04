@@ -342,7 +342,7 @@ private fun PlaylistCard(
                 Text(
                     text = stringResource(R.string.refresh_error_fmt, error),
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.error,
+                    color = MaterialTheme.colorScheme.error,
                 )
             }
         }

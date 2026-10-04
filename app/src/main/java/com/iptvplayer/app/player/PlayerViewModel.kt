@@ -66,6 +66,7 @@ class PlayerViewModel(app: Application) : AndroidViewModel(app) {
     val castAvailable = MutableStateFlow(false)
     val casting = MutableStateFlow(false)
     private var castPlayer: CastPlayer? = null
+    private var castInitAttempted = false
 
     private var connectJob: Job? = null
     private var pollJob: Job? = null

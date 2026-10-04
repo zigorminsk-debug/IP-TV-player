@@ -146,9 +146,9 @@ fun PlayerScreen(onBack: () -> Unit) {
     // PiP mode tracking.
     DisposableEffect(activity) {
         val act = activity as? androidx.activity.ComponentActivity
-        if (act != null) {
+        if (act != null && android.os.Build.VERSION.SDK_INT >= 26) {
             val listener =
-                androidx.core.util.Consumer<androidx.core.util.PictureInPictureModeChangedInfo> { info ->
+                androidx.core.util.Consumer<android.app.PictureInPictureModeChangedInfo> { info ->
                     inPip = info.isInPictureInPictureMode
                 }
             act.addOnPictureInPictureModeChangedListener(listener)

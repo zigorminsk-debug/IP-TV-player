@@ -51,8 +51,9 @@ class SettingsRepository(private val context: Context) {
         val UPDATE_REPO_OVERRIDE = stringPreferencesKey("update_repo_override")
     }
 
-    /** Default values, also used as a placeholder before the first emission. */
-    val DEFAULTS = AppSettings(
+    companion object {
+        /** Default values, also used as a placeholder before the first emission. */
+        val DEFAULTS = AppSettings(
         theme = "SYSTEM",
         showLogos = true,
         preferredAudioLang = "",
@@ -61,10 +62,11 @@ class SettingsRepository(private val context: Context) {
         parentalEnabled = false,
         lastPlaylistId = 0L,
         autoRefreshHours = 0,
-        autoUpdateApp = true,
-        lastUpdateCheck = 0L,
-        updateRepoOverride = "",
-    )
+            autoUpdateApp = true,
+            lastUpdateCheck = 0L,
+            updateRepoOverride = "",
+        )
+    }
 
     val settings: Flow<AppSettings> = context.dataStore.data.map { p ->
         AppSettings(
@@ -130,8 +132,8 @@ class SettingsRepository(private val context: Context) {
     /** Verifies a PIN. Always false when no PIN is configured. */
     suspend fun checkPin(pin: String): Boolean {
         val stored = context.dataStore.data.map { it[Keys.PIN_HASH] }
-        // dataStore.data is a cold flow; use a blocking read of the first value
-        val value = kotlinx.coroutines.flow.first(stored) ?: return false
+        // dataStore.data is a cold flow; take the first emitted value
+        val value = stored.first() ?: return false
         val parts = value.split(":")
         if (parts.size != 2) return false
         val salt = parts[0].hexToBytes()
