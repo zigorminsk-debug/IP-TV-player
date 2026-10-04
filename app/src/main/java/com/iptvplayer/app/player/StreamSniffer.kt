@@ -86,7 +86,7 @@ object StreamSniffer {
         // progressive audio
         "mp3" to (StreamType.PROGRESSIVE to "audio/mpeg"),
         "m4a" to (StreamType.PROGRESSIVE to "audio/mp4"),
-        "aac" to (StreamType.PROGRESSIVE to "audio/aac"),
+        "aac" to (StreamType.PROGRESSIVE to "audio/mp4a-latm"), // = media3 AUDIO_AAC
         "ogg" to (StreamType.PROGRESSIVE to "audio/ogg"),
         "oga" to (StreamType.PROGRESSIVE to "audio/ogg"),
         "flac" to (StreamType.PROGRESSIVE to "audio/flac"),

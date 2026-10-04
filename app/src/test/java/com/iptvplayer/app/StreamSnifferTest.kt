@@ -119,7 +119,7 @@ class StreamSnifferTest {
     fun audioFilesGetAudioMimes() {
         for ((ext, mime) in mapOf(
             "mp3" to "audio/mpeg",
-            "aac" to "audio/aac",
+            "aac" to "audio/mp4a-latm", // = media3 MimeTypes.AUDIO_AAC
             "m4a" to "audio/mp4",
             "flac" to "audio/flac",
             "ogg" to "audio/ogg",
