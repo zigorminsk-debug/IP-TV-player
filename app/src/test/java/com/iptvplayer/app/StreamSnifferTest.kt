@@ -76,7 +76,8 @@ class StreamSnifferTest {
             val r = StreamSniffer.sniff(url)
             assertEquals(url, StreamType.HLS, r.type)
             assertTrue(url, r.isAdaptive)
-            assertEquals(url, "application/vnd.apple.mpegurl", r.mimeType)
+            // same value as media3's MimeTypes.APPLICATION_M3U8
+            assertEquals(url, "application/x-mpegURL", r.mimeType)
             assertEquals(url, "m3u8", r.containerExt)
         }
         assertEquals(StreamType.HLS, StreamSniffer.sniff("http://x/list.m3u").type)

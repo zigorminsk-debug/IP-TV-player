@@ -56,8 +56,10 @@ object StreamSniffer {
     }
 
     // Mime strings intentionally mirror androidx.media3.common.MimeTypes so
-    // the classification can feed MediaItems without conversion.
-    private const val MIME_HLS = "application/vnd.apple.mpegurl"
+    // the classification can feed MediaItems without conversion. Note the
+    // media3 value for HLS is "application/x-mpegURL" (APPLICATION_M3U8),
+    // not the canonical Apple name — keep them identical.
+    private const val MIME_HLS = "application/x-mpegURL"
     private const val MIME_DASH = "application/dash+xml"
     private const val MIME_TS = "video/mp2t"
 
