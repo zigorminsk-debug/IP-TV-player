@@ -13,6 +13,7 @@
 
 | Релиз | Версия | Сборка | Дата (UTC) | GitHub Release |
 |---:|---|---:|---|---|
+| #2 | 1.0.2 | 34 | 2026-10-04 | [v1.0.2](https://github.com/zigorminsk-debug/IP-TV-player/releases/tag/v1.0.2) |
 | #1 | 1.0.0 | 10 | 2026-10-04 | [v1.0.0](https://github.com/zigorminsk-debug/IP-TV-player/releases/tag/v1.0.0) |
 
 ## [Unreleased]
