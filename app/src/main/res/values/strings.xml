@@ -159,6 +159,8 @@
     <string name="section_data">Data</string>
     <string name="section_about">About</string>
     <string name="show_logos">Show channel logos</string>
+    <string name="channel_font_size">Channel name font size</string>
+    <string name="programme_font_size">Programme guide font size</string>
     <string name="audio_lang">Preferred audio language</string>
     <string name="subs_lang">Preferred subtitle language</string>
     <string name="auto_detect">Auto</string>
