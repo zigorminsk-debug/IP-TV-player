@@ -344,7 +344,7 @@ jobs:
 
       - name: Publish GitHub Release
         if: steps.ver.outputs.publish == 'true'
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ steps.ver.outputs.tag }}
           name: "v${{ steps.ver.outputs.name }} — релиз #${{ steps.ver.outputs.release }} (сборка ${{ steps.ver.outputs.build }})"
