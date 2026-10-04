@@ -165,17 +165,19 @@ object XmlTvParser {
         val value = raw.trim()
         if (value.length < 10) return null
         return try {
-            val digits = StringBuilder()
-            for (c in value) {
-                if (c.isDigit()) digits.append(c) else break
-            }
-            while (digits.length < 14) digits.append('0')
-            val local = LocalDateTime.parse(
-                digits.toString(),
-                DateTimeFormatter.ofPattern("yyyyMMddHHmmss"),
-            )
-            val zone = parseZone(value.substring(digits.length))
-            local.toInstant(zone).toEpochMilli() / 1000
+        val digits = StringBuilder()
+        for (c in value) {
+            if (c.isDigit()) digits.append(c) else break
+        }
+        // zone tail must be cut from the ORIGINAL value before padding
+        val tail = value.substring(minOf(digits.length, value.length))
+        while (digits.length < 14) digits.append('0')
+        val local = LocalDateTime.parse(
+            digits.toString(),
+            DateTimeFormatter.ofPattern("yyyyMMddHHmmss"),
+        )
+        val zone = parseZone(tail)
+        local.toInstant(zone).toEpochMilli() / 1000
         } catch (e: Exception) {
             null
         }

@@ -86,9 +86,10 @@ object Catchup {
             "{catchup-id}" to channel.remoteId,
         )
         for ((token, value) in replacements) {
-            result = result.replace(token, value)
-            // ${…} variant used by some generators
+            // ${…} variant used by some generators must be replaced first,
+            // otherwise the bare {…} replacement leaves a stray '$' behind.
             result = result.replace("\$" + token, value)
+            result = result.replace(token, value)
         }
         return result
     }
