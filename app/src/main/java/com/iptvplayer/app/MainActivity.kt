@@ -1,5 +1,6 @@
 package com.iptvplayer.app
 
+import android.content.res.Configuration
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -39,4 +40,13 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
+    override fun onPictureInPictureModeChanged(
+        isInPictureInPictureMode: Boolean,
+        newConfig: Configuration,
+    ) {
+        super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
+        PipState.isInPip = isInPictureInPictureMode
+    }
 }
+

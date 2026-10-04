@@ -14,8 +14,8 @@ import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.exoplayer.trackselection.DefaultTrackSelector
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
-import androidx.lifecycle.lifecycleScope
 import com.google.common.util.concurrent.ListenableFuture
+import kotlinx.coroutines.cancel
 import com.iptvplayer.app.MainActivity
 import com.iptvplayer.app.data.remote.Http
 import com.iptvplayer.app.di.ServiceLocator
@@ -32,6 +32,11 @@ class PlaybackService : MediaSessionService() {
 
     private var mediaSession: MediaSession? = null
     private lateinit var httpFactory: OkHttpDataSource.Factory
+    private val serviceScope =
+        kotlinx.coroutines.CoroutineScope(
+            kotlinx.coroutines.Dispatchers.Main.immediate +
+                kotlinx.coroutines.SupervisorJob(),
+        )
 
     override fun onCreate() {
         super.onCreate()
@@ -77,6 +82,7 @@ class PlaybackService : MediaSessionService() {
             release()
         }
         mediaSession = null
+        serviceScope.cancel()
         super.onDestroy()
     }
 
@@ -97,16 +103,14 @@ class PlaybackService : MediaSessionService() {
             session: MediaSession,
             controller: MediaSession.ControllerInfo,
             mediaItems: List<MediaItem>,
-        ): ListenableFuture<List<MediaItem>> = future {
+        ): ListenableFuture<List<MediaItem>> = serviceScope.future {
             mediaItems.map { resolve(it) }
         }
     }
 
     @Suppress("UNCHECKED_CAST")
     private fun resolve(item: MediaItem): MediaItem {
-        val uri = item.requestMetadata.uri
-            ?: item.localConfiguration?.uri
-            ?: return item
+        val uri = item.localConfiguration?.uri ?: return item
         val extras = item.requestMetadata.extras
 
         // Per-item HTTP headers (from #EXTVLCOPT etc.)

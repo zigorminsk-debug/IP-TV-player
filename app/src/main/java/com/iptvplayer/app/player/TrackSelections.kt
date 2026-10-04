@@ -1,15 +1,18 @@
 package com.iptvplayer.app.player
 
+import androidx.annotation.OptIn
 import androidx.media3.common.C
 import androidx.media3.common.Format
 import androidx.media3.common.Player
 import androidx.media3.common.TrackSelectionOverride
 import androidx.media3.common.Tracks
+import androidx.media3.common.util.UnstableApi
 
 /**
  * Builds human-readable track lists (video quality / audio / subtitles) from
  * the player state and applies selections via [TrackSelectionOverride].
  */
+@OptIn(UnstableApi::class)
 object TrackSelections {
 
     /** A selectable option; [apply] performs the selection on the player. */
@@ -87,9 +90,6 @@ object TrackSelections {
                             .build()
                     },
                 )
-            }
-            if (!anySelected) {
-                // ensure something is marked selected
             }
             result += Group(type, titleFor(type), options)
         }

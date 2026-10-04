@@ -297,7 +297,6 @@ private fun PlaylistCard(
                     }
                 }
                 // overflow menu
-                androidx.compose.material3.Box {}
                 IconButton(onClick = { menuOpen = true }) {
                     Icon(
                         Icons.Filled.Edit,

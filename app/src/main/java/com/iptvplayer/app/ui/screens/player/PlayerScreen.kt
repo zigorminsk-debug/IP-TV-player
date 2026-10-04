@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.ContextWrapper
 import android.os.Build
 import android.util.Rational
+import com.iptvplayer.app.PipState
 import androidx.activity.compose.BackHandler
 import androidx.annotation.OptIn
 import androidx.compose.animation.AnimatedVisibility
@@ -131,7 +132,7 @@ fun PlayerScreen(onBack: () -> Unit) {
     var aspectIndex by remember { mutableStateOf(0) }
     var sliderValue by remember { mutableStateOf(0f) }
     var sliderDragging by remember { mutableStateOf(false) }
-    var inPip by remember { mutableStateOf(false) }
+    val inPip = PipState.isInPip
 
     val current = queueState?.channels?.getOrNull(queueState?.index ?: 0)
 
@@ -143,20 +144,6 @@ fun PlayerScreen(onBack: () -> Unit) {
         onDispose { view.keepScreenOn = false }
     }
 
-    // PiP mode tracking.
-    DisposableEffect(activity) {
-        val act = activity as? androidx.activity.ComponentActivity
-        if (act != null && android.os.Build.VERSION.SDK_INT >= 26) {
-            val listener =
-                androidx.core.util.Consumer<android.app.PictureInPictureModeChangedInfo> { info ->
-                    inPip = info.isInPictureInPictureMode
-                }
-            act.addOnPictureInPictureModeChangedListener(listener)
-            onDispose { act.removeOnPictureInPictureModeChangedListener(listener) }
-        } else {
-            onDispose { }
-        }
-    }
 
     // Auto-hide controls.
     LaunchedEffect(controlsVisible, ui.playing, zapOpen) {
