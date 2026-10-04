@@ -1,0 +1,241 @@
+name: "Build & Release"
+
+# Automated CI/CD pipeline.
+#
+# * Every push / manual run:
+#     - unit tests
+#     - debug + release APK and release AAB, signed with the persistent key
+#     - artifacts attached to the workflow run
+# * Every pushed tag vMAJOR.MINOR.PATCH:
+#     - a GitHub Release is created automatically with:
+#         - signed release APK (installs over the previous version)
+#         - release AAB
+#         - app-update.json  -> consumed by the in-app self-updater
+#         - SHA256SUMS.txt   -> integrity checksums
+#
+# Build numbering: the GitHub Actions run number is used as versionCode,
+# so every build has a unique, monotonically increasing build number.
+#
+# Signing: environment variables (repo secrets) take priority; otherwise the
+# committed keystore/ is used. See docs/06-SIGNING-KEYS.md.
+
+on:
+  push:
+    branches: ["**"]
+    tags: ["v*.*.*"]
+  workflow_dispatch:
+    inputs:
+      version_name:
+        description: "Version name for non-tag builds (e.g. 1.0.1)"
+        required: false
+        default: ""
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: "Build (build ${{ github.run_number }})"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Gradle (with cache)
+        uses: gradle/actions/setup-gradle@v4
+
+      # ubuntu-latest runners come with the Android SDK preinstalled and
+      # licenses accepted; AGP auto-installs any missing components.
+      # This step only verifies/fills the gap if the image changes.
+      - name: Set up Android SDK
+        run: |
+          set -euo pipefail
+          if [ -z "${ANDROID_HOME:-}" ] && [ -z "${ANDROID_SDK_ROOT:-}" ]; then
+            export ANDROID_HOME="$HOME/android-sdk"
+            echo "ANDROID_HOME=$ANDROID_HOME" >> "$GITHUB_ENV"
+          fi
+          SDK="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
+          echo "SDK location: $SDK"
+          if [ ! -d "$SDK/platform-tools" ]; then
+            echo "::warning::Preinstalled SDK not found, installing cmdline-tools"
+            CMDTOOLS_URL="https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip"
+            curl -fsSL --retry 3 -o /tmp/cmdtools.zip "$CMDTOOLS_URL"
+            mkdir -p "$SDK/cmdline-tools"
+            unzip -q /tmp/cmdtools.zip -d "$SDK/cmdline-tools"
+            mv "$SDK/cmdline-tools/cmdline-tools" "$SDK/cmdline-tools/latest"
+            yes | "$SDK/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
+            "$SDK/cmdline-tools/latest/bin/sdkmanager" "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+          else
+            echo "Using preinstalled SDK."
+          fi
+
+      - name: Determine version
+        id: ver
+        run: |
+          set -euo pipefail
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            VERSION="${GITHUB_REF#refs/tags/v}"
+            if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?$ ]]; then
+              echo "::error::Tag must match vMAJOR.MINOR.PATCH (got $GITHUB_REF_NAME)"
+              exit 1
+            fi
+          elif [[ -n "${{ inputs.version_name }}" ]]; then
+            VERSION="${{ inputs.version_name }}"
+          else
+            VERSION="1.0.0-dev"
+          fi
+          echo "name=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "APP_BUILD_TIME=$(date +%s)" >> "$GITHUB_ENV"
+          echo "Version: $VERSION, build number: ${{ github.run_number }}"
+
+      # Repo secrets override the committed keystore when present.
+      - name: Prepare signing key (from secrets, optional)
+        env:
+          KS_B64: ${{ secrets.SIGNING_KEYSTORE_BASE64 }}
+          KS_TYPE: ${{ secrets.SIGNING_STORE_TYPE }}
+          KS_PASS: ${{ secrets.SIGNING_STORE_PASSWORD }}
+          KS_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
+          KS_KEYPASS: ${{ secrets.SIGNING_KEY_PASSWORD }}
+        run: |
+          if [ -n "$KS_B64" ]; then
+            echo "$KS_B64" | base64 -d > /tmp/release-signing.p12
+            echo "SIGNING_STORE_FILE=/tmp/release-signing.p12" >> "$GITHUB_ENV"
+            if [ -n "$KS_TYPE" ]; then echo "SIGNING_STORE_TYPE=$KS_TYPE" >> "$GITHUB_ENV"; fi
+            echo "SIGNING_STORE_PASSWORD=$KS_PASS" >> "$GITHUB_ENV"
+            echo "SIGNING_KEY_ALIAS=$KS_ALIAS" >> "$GITHUB_ENV"
+            echo "SIGNING_KEY_PASSWORD=$KS_KEYPASS" >> "$GITHUB_ENV"
+            echo "Using signing key from repository secrets."
+          else
+            echo "No signing secrets found - using the committed keystore/."
+          fi
+
+      - name: Build (tests + debug APK + release APK + AAB)
+        env:
+          APP_VERSION_CODE: ${{ github.run_number }}
+          APP_VERSION_NAME: ${{ steps.ver.outputs.name }}
+        run: |
+          chmod +x gradlew
+          set -o pipefail
+          ./gradlew testDebugUnitTest assembleDebug assembleRelease bundleRelease --stacktrace 2>&1 | tee build-output.log
+
+      # On failure, publish a compact error digest to the ci/logs branch so
+      # it can be fetched through the GitHub REST API (api.github.com).
+      - name: Publish error digest (on failure)
+        if: failure()
+        run: |
+          set -euo pipefail
+          mkdir -p ci-logs
+          {
+            echo "# Build failure digest — run ${{ github.run_number }} (${{ github.sha }})"
+            echo
+            echo "## Kotlin / javac errors"
+            echo '```'
+            grep -E "^e: |error: " build-output.log | head -250 || echo "(none captured)"
+            echo '```'
+            echo
+            echo "## Test failures (with exception details)"
+            echo '```'
+            grep -E "(FAILED|SKIPPED)$" build-output.log | grep -v "^> Task" | head -80 || echo "(none)"
+            grep -B1 -A25 "AssertionError\|ComparisonFailure\|expected:" build-output.log | head -300 || true
+            echo '```'
+            echo
+            echo "## What went wrong"
+            echo '```'
+            sed -n '/What went wrong/,/^\* Try/p' build-output.log | head -80 || true
+            echo '```'
+            echo
+            echo "## Failed tasks"
+            echo '```'
+            grep -E "^> Task .* FAILED|Execution failed for task" build-output.log | sort -u | head -60 || true
+            echo '```'
+            echo
+            echo "## Log tail (last 120 lines)"
+            echo '```'
+            tail -120 build-output.log
+            echo '```'
+          } > "ci-logs/run-${{ github.run_number }}.md"
+          git config user.name "ci-bot"
+          git config user.email "actions@github.com"
+          git add ci-logs
+          git commit -q -m "ci: error digest for run ${{ github.run_number }}"
+          git push --force origin HEAD:refs/heads/ci/logs
+
+      - name: Collect and rename artifacts
+        id: artifacts
+        env:
+          VERSION: ${{ steps.ver.outputs.name }}
+          BUILD: ${{ github.run_number }}
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          cp app/build/outputs/apk/debug/app-debug.apk \
+            "dist/IP-TV-Player_${VERSION}_build${BUILD}_debug.apk"
+          cp app/build/outputs/apk/release/app-release.apk \
+            "dist/IP-TV-Player_${VERSION}_build${BUILD}_release.apk"
+          cp app/build/outputs/bundle/release/app-release.aab \
+            "dist/IP-TV-Player_${VERSION}_build${BUILD}_release.aab"
+          ls -la dist/
+
+      - name: Verify release APK signature
+        env:
+          VERSION: ${{ steps.ver.outputs.name }}
+          BUILD: ${{ github.run_number }}
+        run: |
+          set -euo pipefail
+          APK="dist/IP-TV-Player_${VERSION}_build${BUILD}_release.apk"
+          APKSIGNER=$(ls "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -1)
+          "$APKSIGNER" verify --print-certs "$APK" | head -10
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: IP-TV-Player_build${{ github.run_number }}
+          path: dist/*
+          if-no-files-found: error
+
+      # ------------------------------------------------------------- release
+      - name: Generate app-update.json and checksums
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          VERSION: ${{ steps.ver.outputs.name }}
+          BUILD: ${{ github.run_number }}
+        run: |
+          set -euo pipefail
+          APK="IP-TV-Player_${VERSION}_build${BUILD}_release.apk"
+          TAG="${GITHUB_REF#refs/tags/}"
+          NOTES="$(git tag -l --format='%(contents)' "$TAG")"
+          python3 scripts/make_update_manifest.py \
+            --repo "$GITHUB_REPOSITORY" \
+            --tag "$TAG" \
+            --version-name "$VERSION" \
+            --build-number "$BUILD" \
+            --apk "dist/$APK" \
+            --apk-url "https://github.com/$GITHUB_REPOSITORY/releases/download/$TAG/$APK" \
+            --notes "$NOTES" \
+            --out dist/app-update.json
+          (cd dist && sha256sum ./* > SHA256SUMS.txt)
+          echo "--- app-update.json ---"
+          cat dist/app-update.json
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/*.apk
+            dist/*.aab
+            dist/app-update.json
+            dist/SHA256SUMS.txt
+          generate_release_notes: true
+          draft: false
+          prerelease: false
