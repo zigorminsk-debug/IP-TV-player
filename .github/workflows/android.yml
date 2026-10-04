@@ -52,7 +52,7 @@ jobs:
           java-version: "17"
 
       - name: Set up Gradle (with cache)
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v6
 
       # ubuntu-latest runners come with the Android SDK preinstalled and
       # licenses accepted; AGP auto-installs any missing components.
