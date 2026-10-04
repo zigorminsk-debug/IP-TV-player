@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">IP-TV Player</string>
+
+    <!-- Tabs -->
+    <string name="tab_playlists">Плейлисты</string>
+    <string name="tab_search">Поиск</string>
+    <string name="tab_settings">Настройки</string>
+    <string name="tab_live">Каналы</string>
+    <string name="tab_movies">Фильмы</string>
+    <string name="tab_series">Сериалы</string>
+
+    <!-- Common -->
+    <string name="ok">ОК</string>
+    <string name="cancel">Отмена</string>
+    <string name="save">Сохранить</string>
+    <string name="close">Закрыть</string>
+    <string name="delete">Удалить</string>
+    <string name="edit">Изменить</string>
+    <string name="refresh">Обновить</string>
+    <string name="info">Инфо</string>
+    <string name="back">Назад</string>
+    <string name="off">Выкл</string>
+    <string name="later">Позже</string>
+    <string name="open_settings">Открыть настройки</string>
+    <string name="watch">Смотреть</string>
+    <string name="search">Поиск</string>
+    <string name="sort">Сортировка</string>
+    <string name="favorites">Избранное</string>
+    <string name="copied">Скопировано</string>
+    <string name="retry">Повторить</string>
+    <string name="locked">Заблокировано</string>
+
+    <!-- Playlists -->
+    <string name="playlists">Плейлисты</string>
+    <string name="add_playlist">Добавить плейлист</string>
+    <string name="playlists_empty_title">Плейлистов пока нет</string>
+    <string name="playlists_empty_hint">Приложение не содержит контента. Добавьте свой M3U-плейлист или аккаунт Xtream Codes, чтобы начать просмотр.</string>
+    <string name="playlist_type_m3u">M3U</string>
+    <string name="playlist_type_xtream">Xtream Codes</string>
+    <string name="playlist_form_title_new">Новый плейлист</string>
+    <string name="playlist_form_title_edit">Изменение плейлиста</string>
+    <string name="field_name">Название</string>
+    <string name="field_url">Ссылка на плейлист</string>
+    <string name="field_server">Сервер (http://host:port)</string>
+    <string name="field_username">Логин</string>
+    <string name="field_password">Пароль</string>
+    <string name="field_epg_url">Ссылка EPG (XMLTV, необязательно)</string>
+    <string name="prefer_hls">Предпочитать HLS (.m3u8) для каналов</string>
+    <string name="auto_refresh">Автообновление</string>
+    <string name="hours_fmt">%1$d ч</string>
+    <string name="channels_count_fmt">Каналов: %1$d</string>
+    <string name="updated_ago">Обновлено: %1$s</string>
+    <string name="never_updated">не обновлялся</string>
+    <string name="refresh_error_fmt">Ошибка обновления: %1$s</string>
+    <string name="delete_playlist_confirm">Удалить плейлист «%1$s»?</string>
+    <string name="delete_playlist_text">Каналы, категории и связанный источник EPG будут удалены из приложения (аккаунт провайдера не затрагивается).</string>
+    <string name="move_up">Вверх</string>
+    <string name="move_down">Вниз</string>
+    <string name="parental_editor">Редактор родительского контроля</string>
+
+    <!-- Channels -->
+    <string name="channels_empty_title">Нет каналов</string>
+    <string name="channels_empty_hint">Обновите плейлист или проверьте ссылку и учётные данные.</string>
+    <string name="no_channels_in_category">В этой категории ничего нет</string>
+    <string name="category_all">Все</string>
+    <string name="add_favorite">В избранное</string>
+    <string name="remove_favorite">Убрать из избранного</string>
+    <string name="hide_channel">Скрыть канал</string>
+    <string name="lock_channel">Заблокировать канал</string>
+    <string name="copy_url">Копировать ссылку</string>
+    <string name="play_external">Открыть во внешнем плеере</string>
+    <string name="rating_fmt">Рейтинг: %1$s</string>
+
+    <!-- Sort -->
+    <string name="sort_default">Порядок плейлиста</string>
+    <string name="sort_name_asc">Название А–Я</string>
+    <string name="sort_name_desc">Название Я–А</string>
+
+    <!-- Search -->
+    <string name="search_hint">Поиск каналов</string>
+    <string name="search_start_typing">Начните вводить запрос</string>
+    <string name="search_start_typing_hint">Поиск по названиям каналов и текущим передачам (минимум 2 символа).</string>
+    <string name="search_empty">Ничего не найдено</string>
+    <string name="section_channels">Каналы</string>
+    <string name="section_programmes">Передачи</string>
+
+    <!-- Guide -->
+    <string name="guide">Программа</string>
+    <string name="guide_empty">Нет данных EPG</string>
+    <string name="guide_empty_hint">Добавьте источник XMLTV в настройках или убедитесь, что провайдер отдаёт EPG.</string>
+    <string name="today">Сегодня</string>
+    <string name="tomorrow">Завтра</string>
+    <string name="time">Время</string>
+
+    <!-- Series -->
+    <string name="season_fmt">Сезон %1$d</string>
+    <string name="series_empty">Нет информации о сериале</string>
+    <string name="series_load_error">Не удалось загрузить информацию о сериале</string>
+
+    <!-- Player -->
+    <string name="play_pause">Воспроизведение / пауза</string>
+    <string name="prev_channel">Предыдущий канал</string>
+    <string name="next_channel">Следующий канал</string>
+    <string name="channel_list">Список каналов</string>
+    <string name="video_tracks">Качество видео</string>
+    <string name="audio_tracks">Аудиодорожка</string>
+    <string name="subtitle_tracks">Субтитры</string>
+    <string name="no_tracks">Дорожки недоступны</string>
+    <string name="aspect_fit">По размеру</string>
+    <string name="aspect_fill">Растянуть</string>
+    <string name="aspect_zoom">Обрезать</string>
+    <string name="sleep_timer">Таймер сна</string>
+    <string name="sleep_timer_done">Воспроизведение остановлено таймером сна</string>
+    <string name="minutes_fmt">%1$d мин</string>
+    <string name="minutes_back_fmt">−%1$d мин</string>
+    <string name="watch_from_start">С начала передачи</string>
+    <string name="pip">Картинка в картинке</string>
+    <string name="cast">Chromecast</string>
+    <string name="playback_error">Ошибка воспроизведения: %1$s</string>
+    <string name="resume_title">Продолжить просмотр?</string>
+    <string name="resume_text">Продолжить с %1$s?</string>
+    <string name="resume_continue">Продолжить</string>
+    <string name="resume_from_start">С начала</string>
+
+    <!-- Parental control -->
+    <string name="parental_control">Родительский контроль</string>
+    <string name="parental_control_subtitle">Запрашивать PIN для заблокированных категорий и каналов</string>
+    <string name="set_pin">Установить PIN</string>
+    <string name="pin_label">PIN (4–8 цифр)</string>
+    <string name="pin_confirm">Повторите PIN</string>
+    <string name="pin_enter_title">Введите PIN</string>
+    <string name="pin_wrong">Неверный PIN</string>
+    <string name="pin_saved">PIN сохранён</string>
+    <string name="pin_cleared">PIN удалён</string>
+    <string name="parental_editor_for">Редактор блокировок: %1$s</string>
+    <string name="parental_editor_hint">Блокировка — требует PIN. Скрыть — убирает из всех списков.</string>
+    <string name="editor_categories">Категории</string>
+    <string name="editor_channels">Каналы</string>
+    <string name="editor_lock">Блок</string>
+    <string name="editor_hide">Скрыть</string>
+
+    <!-- EPG sources -->
+    <string name="epg_sources">Источники EPG</string>
+    <string name="epg_sources_subtitle">Телепрограммы XMLTV</string>
+    <string name="add_epg_source">Добавить источник EPG</string>
+    <string name="epg_sources_empty">Нет источников EPG</string>
+    <string name="epg_sources_empty_hint">Добавьте ссылку XMLTV, чтобы получать программу передач для каналов.</string>
+    <string name="epg_global">Все плейлисты</string>
+    <string name="epg_playlist_link">Применить к</string>
+
+    <!-- Settings -->
+    <string name="section_sources">Источники</string>
+    <string name="section_player">Плеер</string>
+    <string name="section_appearance">Оформление</string>
+    <string name="section_parental">Родительский контроль</string>
+    <string name="section_updates">Обновления</string>
+    <string name="section_data">Данные</string>
+    <string name="section_about">О приложении</string>
+    <string name="show_logos">Показывать логотипы каналов</string>
+    <string name="audio_lang">Предпочитаемый язык аудио</string>
+    <string name="subs_lang">Предпочитаемый язык субтитров</string>
+    <string name="auto_detect">Авто</string>
+    <string name="lang_hint">ISO-код, напр. rus, eng</string>
+    <string name="theme_system">Системная</string>
+    <string name="theme_dark">Тёмная</string>
+    <string name="theme_light">Светлая</string>
+    <string name="auto_update_app">Проверять обновления приложения</string>
+    <string name="auto_update_app_subtitle">Автоматически проверять новые версии в GitHub Releases</string>
+    <string name="check_update_now">Проверить обновления</string>
+    <string name="update_channel">Канал обновлений</string>
+    <string name="version_fmt">%1$s (сборка %2$d)</string>
+    <string name="export_settings">Экспорт настроек</string>
+    <string name="export_settings_subtitle">Плейлисты и источники EPG в JSON (содержит учётные данные!)</string>
+    <string name="import_settings">Импорт настроек</string>
+    <string name="export_done">Экспорт завершён</string>
+    <string name="import_done">Импортировано плейлистов: %1$d</string>
+    <string name="clear_epg_cache">Очистить кэш EPG</string>
+    <string name="epg_cache_cleared">Кэш EPG очищен</string>
+    <string name="clear_progress">Очистить прогресс просмотра</string>
+    <string name="progress_cleared">Прогресс просмотра очищен</string>
+    <string name="about_no_content">Это приложение — только плеер. Оно не содержит каналов, фильмов и плейлистов — добавьте свой контент от провайдера.</string>
+    <string name="about_license">Распространяется по лицензии MIT. Воспроизведение — Media3/ExoPlayer.</string>
+    <string name="about_build_info">versionCode: %1$s</string>
+
+    <!-- Self-update -->
+    <string name="update_available_title">Доступна версия %1$s (сборка %2$d)</string>
+    <string name="update_current_version">Установлена: %1$s (сборка %2$d)</string>
+    <string name="update_download">Скачать</string>
+    <string name="update_downloading">Загрузка обновления…</string>
+    <string name="update_ready_title">Версия %1$s готова к установке</string>
+    <string name="update_ready_text">APK загружен и проверен. Установите его поверх текущей версии — плейлисты и настройки сохранятся.</string>
+    <string name="update_install">Установить</string>
+    <string name="update_permission_title">Требуется разрешение на установку</string>
+    <string name="update_permission_text">Разрешите установку приложений из IP-TV Player (один раз), затем снова нажмите «Установить».</string>
+    <string name="update_uptodate_title">У вас последняя версия</string>
+    <string name="update_uptodate_text">Обновлений нет.</string>
+    <string name="update_failed_title">Не удалось проверить обновления</string>
+</resources>

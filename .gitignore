@@ -1,0 +1,19 @@
+# Gradle
+.gradle/
+build/
+
+# Android Studio / IntelliJ
+.idea/
+*.iml
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Local configuration (SDK path etc.)
+local.properties
+
+# OS
+.DS_Store
+
+# NOTE: keystore/ is intentionally NOT ignored — it contains the public
+# release signing key used by CI. See docs/06-SIGNING-KEYS.md.

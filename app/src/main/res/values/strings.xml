@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">IP-TV Player</string>
+
+    <!-- Tabs -->
+    <string name="tab_playlists">Playlists</string>
+    <string name="tab_search">Search</string>
+    <string name="tab_settings">Settings</string>
+    <string name="tab_live">Live</string>
+    <string name="tab_movies">Movies</string>
+    <string name="tab_series">Series</string>
+
+    <!-- Common -->
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="save">Save</string>
+    <string name="close">Close</string>
+    <string name="delete">Delete</string>
+    <string name="edit">Edit</string>
+    <string name="refresh">Refresh</string>
+    <string name="info">Info</string>
+    <string name="back">Back</string>
+    <string name="off">Off</string>
+    <string name="later">Later</string>
+    <string name="open_settings">Open settings</string>
+    <string name="watch">Watch</string>
+    <string name="search">Search</string>
+    <string name="sort">Sort</string>
+    <string name="favorites">Favorites</string>
+    <string name="copied">Copied</string>
+    <string name="retry">Retry</string>
+    <string name="locked">Locked</string>
+
+    <!-- Playlists -->
+    <string name="playlists">Playlists</string>
+    <string name="add_playlist">Add playlist</string>
+    <string name="playlists_empty_title">No playlists yet</string>
+    <string name="playlists_empty_hint">The app does not include any content. Add your own M3U playlist or Xtream Codes account to start watching.</string>
+    <string name="playlist_type_m3u">M3U</string>
+    <string name="playlist_type_xtream">Xtream Codes</string>
+    <string name="playlist_form_title_new">New playlist</string>
+    <string name="playlist_form_title_edit">Edit playlist</string>
+    <string name="field_name">Name</string>
+    <string name="field_url">Playlist URL</string>
+    <string name="field_server">Server (http://host:port)</string>
+    <string name="field_username">Username</string>
+    <string name="field_password">Password</string>
+    <string name="field_epg_url">EPG URL (XMLTV, optional)</string>
+    <string name="prefer_hls">Prefer HLS (.m3u8) for live</string>
+    <string name="auto_refresh">Auto refresh</string>
+    <string name="hours_fmt">%1$d h</string>
+    <string name="channels_count_fmt">Channels: %1$d</string>
+    <string name="updated_ago">Updated: %1$s</string>
+    <string name="never_updated">never updated</string>
+    <string name="refresh_error_fmt">Refresh error: %1$s</string>
+    <string name="delete_playlist_confirm">Delete playlist “%1$s”?</string>
+    <string name="delete_playlist_text">Channels, categories and the linked EPG source will be removed from the app (the provider account is not affected).</string>
+    <string name="move_up">Move up</string>
+    <string name="move_down">Move down</string>
+    <string name="parental_editor">Parental control editor</string>
+
+    <!-- Channels -->
+    <string name="channels_empty_title">No channels</string>
+    <string name="channels_empty_hint">Refresh the playlist or check its URL and credentials.</string>
+    <string name="no_channels_in_category">Nothing in this category</string>
+    <string name="category_all">All</string>
+    <string name="add_favorite">Add to favorites</string>
+    <string name="remove_favorite">Remove from favorites</string>
+    <string name="hide_channel">Hide channel</string>
+    <string name="lock_channel">Lock channel</string>
+    <string name="copy_url">Copy stream URL</string>
+    <string name="play_external">Play in external player</string>
+    <string name="rating_fmt">Rating: %1$s</string>
+
+    <!-- Sort -->
+    <string name="sort_default">Playlist order</string>
+    <string name="sort_name_asc">Name A–Z</string>
+    <string name="sort_name_desc">Name Z–A</string>
+
+    <!-- Search -->
+    <string name="search_hint">Search channels</string>
+    <string name="search_start_typing">Start typing to search</string>
+    <string name="search_start_typing_hint">Searches channel names and current programmes (min. 2 characters).</string>
+    <string name="search_empty">Nothing found</string>
+    <string name="section_channels">Channels</string>
+    <string name="section_programmes">Programmes</string>
+
+    <!-- Guide -->
+    <string name="guide">Guide</string>
+    <string name="guide_empty">No EPG data</string>
+    <string name="guide_empty_hint">Add an XMLTV EPG source in Settings, or check that your provider supplies EPG.</string>
+    <string name="today">Today</string>
+    <string name="tomorrow">Tomorrow</string>
+    <string name="time">Time</string>
+
+    <!-- Series -->
+    <string name="season_fmt">Season %1$d</string>
+    <string name="series_empty">No series info</string>
+    <string name="series_load_error">Failed to load series info</string>
+
+    <!-- Player -->
+    <string name="play_pause">Play / pause</string>
+    <string name="prev_channel">Previous channel</string>
+    <string name="next_channel">Next channel</string>
+    <string name="channel_list">Channel list</string>
+    <string name="video_tracks">Video quality</string>
+    <string name="audio_tracks">Audio track</string>
+    <string name="subtitle_tracks">Subtitles</string>
+    <string name="no_tracks">No tracks available</string>
+    <string name="aspect_fit">Fit</string>
+    <string name="aspect_fill">Stretch</string>
+    <string name="aspect_zoom">Crop</string>
+    <string name="sleep_timer">Sleep timer</string>
+    <string name="sleep_timer_done">Playback stopped by the sleep timer</string>
+    <string name="minutes_fmt">%1$d min</string>
+    <string name="minutes_back_fmt">−%1$d min</string>
+    <string name="watch_from_start">From programme start</string>
+    <string name="pip">Picture-in-picture</string>
+    <string name="cast">Chromecast</string>
+    <string name="playback_error">Playback error: %1$s</string>
+    <string name="resume_title">Resume playback?</string>
+    <string name="resume_text">Continue from %1$s?</string>
+    <string name="resume_continue">Continue</string>
+    <string name="resume_from_start">From the start</string>
+
+    <!-- Parental control -->
+    <string name="parental_control">Parental control</string>
+    <string name="parental_control_subtitle">Require a PIN to open locked categories and channels</string>
+    <string name="set_pin">Set PIN</string>
+    <string name="pin_label">PIN (4–8 digits)</string>
+    <string name="pin_confirm">Repeat PIN</string>
+    <string name="pin_enter_title">Enter PIN</string>
+    <string name="pin_wrong">Wrong PIN</string>
+    <string name="pin_saved">PIN saved</string>
+    <string name="pin_cleared">PIN cleared</string>
+    <string name="parental_editor_for">Lock editor: %1$s</string>
+    <string name="parental_editor_hint">Lock: requires a PIN. Hide: removes from all lists.</string>
+    <string name="editor_categories">Categories</string>
+    <string name="editor_channels">Channels</string>
+    <string name="editor_lock">Lock</string>
+    <string name="editor_hide">Hide</string>
+
+    <!-- EPG sources -->
+    <string name="epg_sources">EPG sources</string>
+    <string name="epg_sources_subtitle">XMLTV programme guides</string>
+    <string name="add_epg_source">Add EPG source</string>
+    <string name="epg_sources_empty">No EPG sources</string>
+    <string name="epg_sources_empty_hint">Add an XMLTV url to get the programme guide for your channels.</string>
+    <string name="epg_global">All playlists</string>
+    <string name="epg_playlist_link">Apply to</string>
+
+    <!-- Settings -->
+    <string name="section_sources">Sources</string>
+    <string name="section_player">Player</string>
+    <string name="section_appearance">Appearance</string>
+    <string name="section_parental">Parental control</string>
+    <string name="section_updates">Updates</string>
+    <string name="section_data">Data</string>
+    <string name="section_about">About</string>
+    <string name="show_logos">Show channel logos</string>
+    <string name="audio_lang">Preferred audio language</string>
+    <string name="subs_lang">Preferred subtitle language</string>
+    <string name="auto_detect">Auto</string>
+    <string name="lang_hint">ISO code, e.g. rus, eng</string>
+    <string name="theme_system">System</string>
+    <string name="theme_dark">Dark</string>
+    <string name="theme_light">Light</string>
+    <string name="auto_update_app">Check for app updates</string>
+    <string name="auto_update_app_subtitle">Automatically check GitHub releases for a new version</string>
+    <string name="check_update_now">Check for updates</string>
+    <string name="update_channel">Update channel</string>
+    <string name="version_fmt">%1$s (build %2$d)</string>
+    <string name="export_settings">Export settings</string>
+    <string name="export_settings_subtitle">Playlists and EPG sources as JSON (contains credentials!)</string>
+    <string name="import_settings">Import settings</string>
+    <string name="export_done">Export completed</string>
+    <string name="import_done">Imported playlists: %1$d</string>
+    <string name="clear_epg_cache">Clear EPG cache</string>
+    <string name="epg_cache_cleared">EPG cache cleared</string>
+    <string name="clear_progress">Clear watch progress</string>
+    <string name="progress_cleared">Watch progress cleared</string>
+    <string name="about_no_content">This app is a player only. It does not include any channels, movies or playlists — add your own content from your provider.</string>
+    <string name="about_license">Released under the MIT license. Media playback is powered by Media3/ExoPlayer.</string>
+    <string name="about_build_info">versionCode: %1$s</string>
+
+    <!-- Self-update -->
+    <string name="update_available_title">Update available: %1$s (build %2$d)</string>
+    <string name="update_current_version">Installed: %1$s (build %2$d)</string>
+    <string name="update_download">Download</string>
+    <string name="update_downloading">Downloading update…</string>
+    <string name="update_ready_title">Update %1$s is ready</string>
+    <string name="update_ready_text">The APK has been downloaded and verified. Install it over the current version — your playlists and settings will be kept.</string>
+    <string name="update_install">Install</string>
+    <string name="update_permission_title">Installation permission needed</string>
+    <string name="update_permission_text">Allow installing apps from IP-TV Player (once), then tap Install again.</string>
+    <string name="update_uptodate_title">You are up to date</string>
+    <string name="update_uptodate_text">This is the latest version.</string>
+    <string name="update_failed_title">Update check failed</string>
+</resources>
