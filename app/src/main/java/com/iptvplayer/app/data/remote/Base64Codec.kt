@@ -30,6 +30,10 @@ object Base64Codec {
             }
         }
         if (pad > 2) return input
-        return String(out, 0, idx, Charsets.UTF_8)
+        val decoded = String(out, 0, idx, Charsets.UTF_8)
+        // Plain text that happens to look like base64 decodes to byte garbage:
+        // if the result is not valid UTF-8 (contains replacement chars), the
+        // input was not base64-encoded text after all.
+        return if (decoded.contains('�')) input else decoded
     }
 }

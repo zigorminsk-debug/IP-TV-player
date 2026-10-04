@@ -122,7 +122,7 @@ class Base64CodecTest {
 
     @Test
     fun decodesUtf8() {
-        assertEquals("Привет", Base64Codec.decodeToString("0J/RgNC40LLQtdGCIQ=="))
+        assertEquals("Привет!", Base64Codec.decodeToString("0J/RgNC40LLQtdGCIQ=="))
         assertEquals("News", Base64Codec.decodeToString("TmV3cw=="))
     }
 

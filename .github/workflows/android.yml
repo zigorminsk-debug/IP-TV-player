@@ -143,6 +143,12 @@ jobs:
             grep -E "^e: |error: " build-output.log | head -250 || echo "(none captured)"
             echo '```'
             echo
+            echo "## Test failures (with exception details)"
+            echo '```'
+            grep -E "(FAILED|SKIPPED)$" build-output.log | grep -v "^> Task" | head -80 || echo "(none)"
+            grep -B1 -A25 "AssertionError\|ComparisonFailure\|expected:" build-output.log | head -300 || true
+            echo '```'
+            echo
             echo "## What went wrong"
             echo '```'
             sed -n '/What went wrong/,/^\* Try/p' build-output.log | head -80 || true

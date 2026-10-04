@@ -180,3 +180,12 @@ dependencies {
     testImplementation(libs.junit)
     testImplementation(libs.kxml2)
 }
+
+tasks.withType<Test>().configureEach {
+    testLogging {
+        events("failed", "skipped")
+        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+        showCauses = true
+        showStackTraces = true
+    }
+}
