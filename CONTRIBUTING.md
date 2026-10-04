@@ -7,13 +7,16 @@ PR приветствуются. Коротко:
 3. UI-строки — в `values/strings.xml` (EN) **и** `values-ru/strings.xml` (RU).
 4. Изменения парсеров/URL-шаблонов сопровождайте тестами
    (`app/src/test/java/com/iptvplayer/app/`).
-5. Обновите `CHANGELOG.md` (секция `[Unreleased]`).
+5. Обновите `CHANGELOG.md` (секция `[Unreleased]`). Таблицу «История релизов»
+   не трогайте — её ведёт CI.
 6. Не меняйте: `applicationId`, схему `app-update.json`, формат тегов
-   `vX.Y.Z`, имя workflow-файла (см. docs/07-CONTINUATION.md — «Критические
-   точки»).
+   `vX.Y.Z`, имя workflow-файла, `versionCode`/`versionName` и `LAST_RELEASE`
+   в `version.properties` (см. docs/07-CONTINUATION.md — «Критические точки»).
 7. Опишите PR: что и почему; скриншоты для UI-изменений.
 
 Стиль: официальный Kotlin style (`ktlint`-совместимый), один экран — один пакет
 в `ui/screens/…`, логика — в `data/repo/…`.
 
-Релизы мейнтейнер делает тегами — см. [docs/04-RELEASE.md](docs/04-RELEASE.md).
+Релизы выпускаются автоматически при мерже в `main` (версия
+`мажор.минор.<номер релиза>`) или тегом `vX.Y.Z` — см.
+[docs/04-RELEASE.md](docs/04-RELEASE.md).

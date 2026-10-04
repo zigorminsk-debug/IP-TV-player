@@ -6,35 +6,52 @@
 
 **Каждый push в любую ветку** (и ручной запуск `workflow_dispatch`):
 
-1. Чекаут, JDK 17 (Temurin), Gradle с кэшем, Android SDK.
-2. Юнит-тесты (`testDebugUnitTest`).
-3. Сборка `assembleDebug` + `assembleRelease` + `bundleRelease`.
-4. Проверка подписи релизного APK (`apksigner verify --print-certs`).
-5. Артефакты workflow: `IP-TV-Player_<версия>_build<N>_{debug.apk,release.apk,release.aab}`.
+1. Чекаут (полная история + теги), JDK 17 (Temurin), Gradle с кэшем, Android SDK.
+2. Вычисление версии и номера релиза ([`scripts/version.sh`](../scripts/version.sh));
+   для обычных веток — `X.Y.N-dev`.
+3. Юнит-тесты (`testDebugUnitTest`).
+4. Сборка `assembleDebug` + `assembleRelease` + `bundleRelease`.
+5. Проверка подписи релизного APK (`apksigner verify --print-certs`).
+6. Артефакты workflow: `IP-TV-Player_<версия>_build<N>_{debug.apk,release.apk,release.aab}`.
 
-**Каждый тег `vMAJOR.MINOR.PATCH`** — всё то же плюс:
+**Push в `main` и теги `vMAJOR.MINOR.PATCH`** — всё то же плюс:
 
-6. Генерация `app-update.json` (манифест самообновления, см.
+7. Генерация `app-update.json` (манифест самообновления, см.
    [05-AUTO-UPDATE.md](05-AUTO-UPDATE.md)) скриптом
    [`scripts/make_update_manifest.py`](../scripts/make_update_manifest.py).
-7. `SHA256SUMS.txt` — контрольные суммы всех артефактов.
-8. Автоматическое создание **GitHub Release** (не draft, не prerelease) со всеми
-   файлами и автосгенерированными примечаниями к релизу.
+8. `SHA256SUMS.txt` — контрольные суммы публикуемых файлов.
+9. Создание **GitHub Release** с тегом `vX.Y.N` и заголовком
+   «vX.Y.N — релиз #N (сборка M)» (не draft, не prerelease).
+10. Фиксация релиза в репозитории: строка в таблице «История релизов»
+    (`CHANGELOG.md`) и `LAST_RELEASE` в `version.properties`
+    ([`scripts/record_release.py`](../scripts/record_release.py)), коммит
+    `chore(release): … [skip ci]` — он не запускает новую сборку.
+
+Для `workflow_dispatch` релиз публикуется только при включённой галочке
+«Опубликовать GitHub Release».
 
 Тег с некорректным форматом (например `v1.2`) уронит сборку с понятной ошибкой —
 это защита от опечаток в версии.
 
-## Номера сборок (build numbers)
+## Версии, номера релизов и номера сборок
+
+| Что | Значение | Кто задаёт |
+|---|---|---|
+| `versionName` | `МАЖОР.МИНОР.<номер релиза>`, напр. `1.0.2` | `version.properties` + `scripts/version.sh` |
+| Номер релиза | порядковый номер GitHub Release (= patch) | `scripts/version.sh` по тегам `vX.Y.Z` |
+| `versionCode` | номер сборки = `github.run_number` | GitHub Actions |
 
 **`versionCode` APK = `github.run_number`** — сквозной счётчик запусков workflow
 в этом репозитории. Свойства:
 
 - каждый артефакт CI имеет уникальный возрастающий номер;
 - релизы можно выпускать из любой ветки — номер всё равно растёт;
-- `versionName` берётся из тега (`v1.2.3` → `1.2.3`) или задаётся вручную при
-  `workflow_dispatch` (для не-релизных сборок по умолчанию `1.0.0-dev`);
-- в приложении версия отображается как `1.2.3 (сборка 57)`; `versionCode`
-  также виден в «Настройки → О приложении».
+- `versionName` для релиза = `МАЖОР.МИНОР.<номер релиза>`; для сборок обычных
+  веток добавляется суффикс `-dev` (`1.0.3-dev`), такие сборки не публикуются;
+- в приложении версия отображается как `1.0.2 (релиз 2 · сборка 57)`;
+  `versionCode` также виден в «Настройки → О приложении».
+
+Подробно о схеме и способах выпуска — [04-RELEASE.md](04-RELEASE.md).
 
 ⚠️ **Важно**: `run_number` привязан к файлу workflow. Не переименовывайте
 `.github/workflows/android.yml` и не пересоздавайте репозиторий — иначе счётчик
@@ -90,8 +107,10 @@ gh secret set SIGNING_KEY_PASSWORD    --body "<пароль из keystore.proper
 
 При падении сборки workflow публикует компактный дайджест ошибок (ошибки
 компиляции `e:`, упавшие тесты со stack trace, хвост лога) в файл
-`ci-logs/run-<N>.md` на ветке **ci/logs** (force-push, ветка перезаписывается).
-Это позволяет читать причину падения через REST API / веб-интерфейс даже без
-доступа к полным логам Actions. Изменения в `ci-logs/**` намеренно исключены
-из триггеров (`paths-ignore`), чтобы публикация дайджеста не запускала новую
-сборку. Ветку можно удалить — она пересоздастся при следующем падении.
+`ci-logs/run-<N>.md` на ветке **ci/logs**. Ветка создаётся с нуля и содержит
+**только каталог `ci-logs/`** (никакой копии исходников), каждый новый дайджест
+перезаписывает её force-push'ем. Это позволяет читать причину падения через
+REST API / веб-интерфейс даже без доступа к полным логам Actions. Изменения в
+`ci-logs/**` исключены из триггеров (`paths-ignore`), поэтому публикация
+дайджеста не запускает новую сборку. Ветку можно удалить — она пересоздастся
+при следующем падении.

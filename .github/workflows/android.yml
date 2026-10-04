@@ -1,34 +1,41 @@
 name: "Build & Release"
 
-# Automated CI/CD pipeline.
+# ---------------------------------------------------------------------------
+# Автосборка и автопубликация релизов IP-TV Player.
+# ---------------------------------------------------------------------------
+# Схема версий (единый источник — version.properties, см. docs/04-RELEASE.md):
 #
-# * Every push / manual run:
-#     - unit tests
-#     - debug + release APK and release AAB, signed with the persistent key
-#     - artifacts attached to the workflow run
-# * Every pushed tag vMAJOR.MINOR.PATCH:
-#     - a GitHub Release is created automatically with:
-#         - signed release APK (installs over the previous version)
-#         - release AAB
-#         - app-update.json  -> consumed by the in-app self-updater
-#         - SHA256SUMS.txt   -> integrity checksums
+#     versionName = МАЖОР.МИНОР.<НОМЕР РЕЛИЗА>      (patch == номер релиза)
+#     versionCode = номер сборки = github.run_number (только растёт)
 #
-# Build numbering: the GitHub Actions run number is used as versionCode,
-# so every build has a unique, monotonically increasing build number.
+# Что когда происходит:
+#   * push в любую ветку   -> тесты + APK/AAB в артефактах (версия X.Y.N-dev);
+#   * push в main          -> то же + НОВЫЙ релиз: следующий номер релиза,
+#                             тег vX.Y.N, GitHub Release, app-update.json,
+#                             запись в CHANGELOG.md и version.properties;
+#   * push тега vX.Y.Z     -> релиз именно этой версии (номер релиза = Z);
+#   * workflow_dispatch    -> ручная сборка, релиз только по галочке.
 #
-# Signing: environment variables (repo secrets) take priority; otherwise the
-# committed keystore/ is used. See docs/06-SIGNING-KEYS.md.
+# Подпись: секреты репозитория приоритетнее закоммиченного keystore/
+# (docs/06-SIGNING-KEYS.md).
 
 on:
   push:
     branches: ["**"]
     tags: ["v*.*.*"]
+    paths-ignore:
+      - "ci-logs/**"
   workflow_dispatch:
     inputs:
       version_name:
-        description: "Version name for non-tag builds (e.g. 1.0.1)"
+        description: "Версия для ручной сборки (например 1.0.7). Пусто = следующий номер релиза"
         required: false
         default: ""
+      publish_release:
+        description: "Опубликовать GitHub Release"
+        type: boolean
+        required: false
+        default: false
 
 concurrency:
   group: build-${{ github.ref }}
@@ -44,6 +51,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+        with:
+          # Полная история и теги нужны, чтобы вычислить номер релиза
+          # и записать результат обратно в main.
+          fetch-depth: 0
 
       - name: Set up JDK 17
         uses: actions/setup-java@v5
@@ -79,24 +90,71 @@ jobs:
             echo "Using preinstalled SDK."
           fi
 
-      - name: Determine version
+      # ------------------------------------------------------- версия/релиз
+      - name: Determine version and release number
         id: ver
+        env:
+          INPUT_VERSION: ${{ inputs.version_name }}
+          INPUT_PUBLISH: ${{ inputs.publish_release }}
         run: |
           set -euo pipefail
-          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
-            VERSION="${GITHUB_REF#refs/tags/v}"
-            if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?$ ]]; then
-              echo "::error::Tag must match vMAJOR.MINOR.PATCH (got $GITHUB_REF_NAME)"
-              exit 1
-            fi
-          elif [[ -n "${{ inputs.version_name }}" ]]; then
-            VERSION="${{ inputs.version_name }}"
-          else
-            VERSION="1.0.0-dev"
-          fi
-          echo "name=$VERSION" >> "$GITHUB_OUTPUT"
+          chmod +x scripts/version.sh
+
+          case "$GITHUB_EVENT_NAME" in
+            push)
+              if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+                MODE=tag; PUBLISH=true
+              elif [[ "$GITHUB_REF" == "refs/heads/main" ]]; then
+                MODE=next; PUBLISH=true
+              else
+                MODE=dev; PUBLISH=false
+              fi
+              ;;
+            workflow_dispatch)
+              PUBLISH="${INPUT_PUBLISH:-false}"
+              if [[ -n "${INPUT_VERSION:-}" ]]; then
+                MODE=manual
+              elif [[ "$PUBLISH" == "true" ]]; then
+                MODE=next
+              else
+                MODE=dev
+              fi
+              ;;
+            *)
+              MODE=dev; PUBLISH=false
+              ;;
+          esac
+
+          case "$MODE" in
+            tag)    VERSION_OUT="$(scripts/version.sh --mode tag --tag "$GITHUB_REF_NAME")" ;;
+            manual) VERSION_OUT="$(scripts/version.sh --mode manual --version "$INPUT_VERSION")" ;;
+            next)   VERSION_OUT="$(scripts/version.sh --mode next)" ;;
+            dev)    VERSION_OUT="$(scripts/version.sh --mode dev)" ;;
+          esac
+          eval "$VERSION_OUT"
+
+          BUILD="${{ github.run_number }}"
+          {
+            echo "name=$VERSION_NAME"
+            echo "release=$RELEASE_NUMBER"
+            echo "tag=$TAG"
+            echo "build=$BUILD"
+            echo "publish=$PUBLISH"
+          } >> "$GITHUB_OUTPUT"
           echo "APP_BUILD_TIME=$(date +%s)" >> "$GITHUB_ENV"
-          echo "Version: $VERSION, build number: ${{ github.run_number }}"
+
+          echo "::notice title=Версия::$VERSION_NAME — релиз #$RELEASE_NUMBER, сборка $BUILD (публикация релиза: $PUBLISH)"
+          {
+            echo "### Версия сборки"
+            echo
+            echo "| Параметр | Значение |"
+            echo "|---|---|"
+            echo "| versionName | \`$VERSION_NAME\` |"
+            echo "| Номер релиза | \`#$RELEASE_NUMBER\` |"
+            echo "| versionCode (сборка) | \`$BUILD\` |"
+            echo "| Тег | \`$TAG\` |"
+            echo "| Публикация релиза | \`$PUBLISH\` |"
+          } >> "$GITHUB_STEP_SUMMARY"
 
       # Repo secrets override the committed keystore when present.
       - name: Prepare signing key (from secrets, optional)
@@ -119,10 +177,12 @@ jobs:
             echo "No signing secrets found - using the committed keystore/."
           fi
 
+      # ------------------------------------------------------------- сборка
       - name: Build (tests + debug APK + release APK + AAB)
         env:
           APP_VERSION_CODE: ${{ github.run_number }}
           APP_VERSION_NAME: ${{ steps.ver.outputs.name }}
+          APP_RELEASE_NUMBER: ${{ steps.ver.outputs.release }}
         run: |
           chmod +x gradlew
           set -o pipefail
@@ -130,13 +190,22 @@ jobs:
 
       # On failure, publish a compact error digest to the ci/logs branch so
       # it can be fetched through the GitHub REST API (api.github.com).
+      # The branch holds ONLY the digests — it is rebuilt from scratch.
       - name: Publish error digest (on failure)
         if: failure()
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          mkdir -p ci-logs
+          DIGEST="$RUNNER_TEMP/ci-logs/run-${{ github.run_number }}.md"
+          mkdir -p "$(dirname "$DIGEST")"
           {
             echo "# Build failure digest — run ${{ github.run_number }} (${{ github.sha }})"
+            echo
+            echo "- Ветка/тег: \`${{ github.ref_name }}\`"
+            echo "- Версия: \`${{ steps.ver.outputs.name }}\` (релиз #${{ steps.ver.outputs.release }})"
+            echo "- Лог запуска: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
             echo
             echo "## Kotlin / javac errors"
             echo '```'
@@ -163,18 +232,26 @@ jobs:
             echo '```'
             tail -120 build-output.log
             echo '```'
-          } > "ci-logs/run-${{ github.run_number }}.md"
+          } > "$DIGEST"
+
+          WORK="$RUNNER_TEMP/ci-logs-repo"
+          mkdir -p "$WORK/ci-logs"
+          cp "$DIGEST" "$WORK/ci-logs/"
+          cd "$WORK"
+          git init -q -b ci/logs
           git config user.name "ci-bot"
           git config user.email "actions@github.com"
           git add ci-logs
           git commit -q -m "ci: error digest for run ${{ github.run_number }}"
-          git push --force origin HEAD:refs/heads/ci/logs
+          git push -q --force \
+            "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" \
+            HEAD:refs/heads/ci/logs
 
+      # ---------------------------------------------------------- артефакты
       - name: Collect and rename artifacts
-        id: artifacts
         env:
           VERSION: ${{ steps.ver.outputs.name }}
-          BUILD: ${{ github.run_number }}
+          BUILD: ${{ steps.ver.outputs.build }}
         run: |
           set -euo pipefail
           mkdir -p dist
@@ -189,7 +266,7 @@ jobs:
       - name: Verify release APK signature
         env:
           VERSION: ${{ steps.ver.outputs.name }}
-          BUILD: ${{ github.run_number }}
+          BUILD: ${{ steps.ver.outputs.build }}
         run: |
           set -euo pipefail
           APK="dist/IP-TV-Player_${VERSION}_build${BUILD}_release.apk"
@@ -199,44 +276,133 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: IP-TV-Player_build${{ github.run_number }}
+          name: IP-TV-Player_${{ steps.ver.outputs.name }}_build${{ github.run_number }}
           path: dist/*
           if-no-files-found: error
 
-      # ------------------------------------------------------------- release
-      - name: Generate app-update.json and checksums
-        if: startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main'
+      # ------------------------------------------------------------- релиз
+      - name: Generate app-update.json, checksums and release notes
+        if: steps.ver.outputs.publish == 'true'
         env:
           VERSION: ${{ steps.ver.outputs.name }}
-          BUILD: ${{ github.run_number }}
+          RELEASE: ${{ steps.ver.outputs.release }}
+          BUILD: ${{ steps.ver.outputs.build }}
+          TAG: ${{ steps.ver.outputs.tag }}
         run: |
           set -euo pipefail
           APK="IP-TV-Player_${VERSION}_build${BUILD}_release.apk"
-          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then TAG="${GITHUB_REF#refs/tags/}"; else TAG="auto-v${VERSION}-build${BUILD}"; fi
-          NOTES="$(git tag -l --format='%(contents)' "$TAG")"
+
+          # Примечания: текст аннотации тега, иначе сообщение последнего коммита.
+          NOTES="$(git tag -l --format='%(contents)' "$TAG" 2>/dev/null || true)"
+          if [ -z "${NOTES// /}" ]; then
+            NOTES="$(git log -1 --pretty=%B)"
+          fi
+          NOTES="$(printf '%s' "$NOTES" | head -c 1500)"
+
           python3 scripts/make_update_manifest.py \
             --repo "$GITHUB_REPOSITORY" \
             --tag "$TAG" \
             --version-name "$VERSION" \
+            --release-number "$RELEASE" \
             --build-number "$BUILD" \
             --apk "dist/$APK" \
             --apk-url "https://github.com/$GITHUB_REPOSITORY/releases/download/$TAG/$APK" \
             --notes "$NOTES" \
             --out dist/app-update.json
-          (cd dist && sha256sum ./* > SHA256SUMS.txt)
+
+          # Контрольные суммы только для публикуемых файлов (без самого файла сумм).
+          (cd dist && sha256sum IP-TV-Player_* app-update.json > SHA256SUMS.txt)
+
+          {
+            echo "**Версия:** \`$VERSION\` · **Релиз:** \`#$RELEASE\` · **Сборка (versionCode):** \`$BUILD\`"
+            echo
+            echo "Версии нумеруются по схеме \`мажор.минор.<номер релиза>\`, поэтому"
+            echo "\`$VERSION\` — это релиз **#$RELEASE**. В приложении номер виден в"
+            echo "«Настройки → О приложении»: \`$VERSION (релиз $RELEASE · сборка $BUILD)\`."
+            echo
+            echo "### Файлы"
+            echo
+            echo "| Файл | Назначение |"
+            echo "|---|---|"
+            echo "| \`$APK\` | подписанный APK — устанавливается поверх предыдущей версии |"
+            echo "| \`IP-TV-Player_${VERSION}_build${BUILD}_release.aab\` | бандл для Google Play |"
+            echo "| \`IP-TV-Player_${VERSION}_build${BUILD}_debug.apk\` | отладочная сборка (отдельный applicationId) |"
+            echo "| \`app-update.json\` | манифест самообновления |"
+            echo "| \`SHA256SUMS.txt\` | контрольные суммы |"
+            echo
+            echo "### Что нового"
+            echo
+            printf '%s\n' "$NOTES"
+            echo
+            echo "---"
+            echo
+            echo "Полная история версий — [CHANGELOG.md](https://github.com/$GITHUB_REPOSITORY/blob/main/CHANGELOG.md)."
+          } > "$RUNNER_TEMP/RELEASE_BODY.md"
+
           echo "--- app-update.json ---"
           cat dist/app-update.json
 
-      - name: Create GitHub Release
-        if: startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main'
+      - name: Publish GitHub Release
+        if: steps.ver.outputs.publish == 'true'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.ref_type == 'tag' && github.ref_name || format('auto-v{0}-build{1}', steps.ver.outputs.name, github.run_number) }}
+          tag_name: ${{ steps.ver.outputs.tag }}
+          name: "v${{ steps.ver.outputs.name }} — релиз #${{ steps.ver.outputs.release }} (сборка ${{ steps.ver.outputs.build }})"
+          body_path: ${{ runner.temp }}/RELEASE_BODY.md
           files: |
             dist/*.apk
             dist/*.aab
             dist/app-update.json
             dist/SHA256SUMS.txt
           generate_release_notes: true
+          make_latest: true
           draft: false
           prerelease: false
+
+      # Фиксируем факт релиза в репозитории: строка в CHANGELOG.md + LAST_RELEASE.
+      # Коммит делается от имени CI с [skip ci], новую сборку он не запускает.
+      - name: Record release in CHANGELOG and version.properties
+        if: steps.ver.outputs.publish == 'true' && github.ref == 'refs/heads/main'
+        continue-on-error: true
+        env:
+          VERSION: ${{ steps.ver.outputs.name }}
+          RELEASE: ${{ steps.ver.outputs.release }}
+          BUILD: ${{ steps.ver.outputs.build }}
+          TAG: ${{ steps.ver.outputs.tag }}
+        run: |
+          set -euo pipefail
+          python3 scripts/record_release.py \
+            --release "$RELEASE" \
+            --version "$VERSION" \
+            --build "$BUILD" \
+            --tag "$TAG" \
+            --repo "$GITHUB_REPOSITORY"
+
+          if git diff --quiet -- CHANGELOG.md version.properties; then
+            echo "Нечего фиксировать — файлы уже актуальны."
+            exit 0
+          fi
+
+          git config user.name "ci-bot"
+          git config user.email "actions@github.com"
+          git add CHANGELOG.md version.properties
+          git commit -q -m "chore(release): v$VERSION — релиз #$RELEASE (сборка $BUILD) [skip ci]"
+          for attempt in 1 2 3; do
+            if git pull --rebase --autostash origin main && git push origin HEAD:main; then
+              echo "Релиз зафиксирован в main."
+              exit 0
+            fi
+            echo "Попытка $attempt не удалась, повтор через 5 с…"
+            sleep 5
+          done
+          echo "::warning::Не удалось записать релиз в main (CHANGELOG/version.properties)"
+
+      - name: Release summary
+        if: steps.ver.outputs.publish == 'true'
+        run: |
+          {
+            echo "### Опубликован релиз"
+            echo
+            echo "**[v${{ steps.ver.outputs.name }} — релиз #${{ steps.ver.outputs.release }}](${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ steps.ver.outputs.tag }})**"
+            echo " (сборка ${{ steps.ver.outputs.build }})"
+          } >> "$GITHUB_STEP_SUMMARY"

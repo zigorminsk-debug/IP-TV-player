@@ -169,7 +169,7 @@
     <string name="auto_update_app_subtitle">Автоматически проверять новые версии в GitHub Releases</string>
     <string name="check_update_now">Проверить обновления</string>
     <string name="update_channel">Канал обновлений</string>
-    <string name="version_fmt">%1$s (сборка %2$d)</string>
+    <string name="version_fmt">%1$s (релиз %2$d · сборка %3$d)</string>
     <string name="export_settings">Экспорт настроек</string>
     <string name="export_settings_subtitle">Плейлисты и источники EPG в JSON (содержит учётные данные!)</string>
     <string name="import_settings">Импорт настроек</string>
@@ -181,11 +181,11 @@
     <string name="progress_cleared">Прогресс просмотра очищен</string>
     <string name="about_no_content">Это приложение — только плеер. Оно не содержит каналов, фильмов и плейлистов — добавьте свой контент от провайдера.</string>
     <string name="about_license">Распространяется по лицензии MIT. Воспроизведение — Media3/ExoPlayer.</string>
-    <string name="about_build_info">versionCode: %1$s</string>
+    <string name="about_build_info">versionCode: %1$s · versionName = мажор.минор.релиз</string>
 
     <!-- Self-update -->
-    <string name="update_available_title">Доступна версия %1$s (сборка %2$d)</string>
-    <string name="update_current_version">Установлена: %1$s (сборка %2$d)</string>
+    <string name="update_available_title">Доступна версия %1$s (релиз %2$d · сборка %3$d)</string>
+    <string name="update_current_version">Установлена: %1$s (релиз %2$d · сборка %3$d)</string>
     <string name="update_download">Скачать</string>
     <string name="update_downloading">Загрузка обновления…</string>
     <string name="update_ready_title">Версия %1$s готова к установке</string>

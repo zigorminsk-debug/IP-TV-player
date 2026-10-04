@@ -10,21 +10,48 @@ plugins {
 }
 
 // ---------------------------------------------------------------------------
-// Versioning / build numbers
+// Versioning / release numbers / build numbers
 // ---------------------------------------------------------------------------
-// Build number (versionCode) and version name can come from:
-//   1. Environment variables APP_VERSION_CODE / APP_VERSION_NAME (used by CI).
-//   2. Gradle properties -PAPP_VERSION_CODE=… -PAPP_VERSION_NAME=… (local).
-//   3. Fallback defaults for local development.
-// CI always passes the GitHub Actions run number as APP_VERSION_CODE, so every
-// build produced by CI has a unique, monotonically increasing build number.
+// Scheme (single source of truth: <root>/version.properties):
+//
+//     versionName = VERSION_MAJOR.VERSION_MINOR.<release number>
+//     versionCode = build number = GitHub Actions run number
+//
+// The patch component IS the sequential release number, so every GitHub
+// Release maps 1:1 to a version: release #2 -> 1.0.2, release #3 -> 1.0.3 …
+// The number is computed by scripts/version.sh from the published vX.Y.Z tags
+// and handed to Gradle by CI. Locally the fallback is
+// "MAJOR.MINOR.<LAST_RELEASE>-dev".
+//
+// Override order: environment (CI) -> -P Gradle properties -> version.properties.
 // See docs/03-CI-CD.md and docs/04-RELEASE.md.
-val envVersionCode: String? = System.getenv("APP_VERSION_CODE")
-val envVersionName: String? = System.getenv("APP_VERSION_NAME")
-val propVersionCode: String? = project.findProperty("APP_VERSION_CODE") as String?
-val propVersionName: String? = project.findProperty("APP_VERSION_NAME") as String?
-val appVersionCode = envVersionCode?.toIntOrNull() ?: propVersionCode?.toIntOrNull() ?: 1
-val appVersionName = (envVersionName ?: propVersionName ?: "1.0.0-dev").removePrefix("v")
+val versionProps = Properties().apply {
+    val f = rootProject.file("version.properties")
+    if (f.exists()) f.inputStream().use { load(it) }
+}
+
+fun versionProp(name: String, fallback: String): String =
+    versionProps.getProperty(name)?.trim()?.takeIf { it.isNotEmpty() } ?: fallback
+
+fun buildSetting(envName: String, propName: String): String? =
+    System.getenv(envName)?.takeIf { it.isNotBlank() }
+        ?: (project.findProperty(propName) as String?)?.takeIf { it.isNotBlank() }
+
+val versionMajor = versionProp("VERSION_MAJOR", "1")
+val versionMinor = versionProp("VERSION_MINOR", "0")
+val lastRelease = versionProp("LAST_RELEASE", "1")
+
+val appVersionCode = buildSetting("APP_VERSION_CODE", "APP_VERSION_CODE")?.toIntOrNull() ?: 1
+val appVersionName = (
+    buildSetting("APP_VERSION_NAME", "APP_VERSION_NAME")
+        ?: "$versionMajor.$versionMinor.$lastRelease-dev"
+    ).removePrefix("v")
+
+// Sequential release number; defaults to the patch component of the version.
+val appReleaseNumber = buildSetting("APP_RELEASE_NUMBER", "APP_RELEASE_NUMBER")?.toIntOrNull()
+    ?: appVersionName.substringBefore('-').substringAfterLast('.').toIntOrNull()
+    ?: lastRelease.toIntOrNull()
+    ?: 0
 
 // GitHub <owner>/<repo> used by the in-app self-updater.
 // Override locally/forks with -PUPDATE_REPO="owner/repo" or env UPDATE_REPO.
@@ -61,6 +88,7 @@ android {
         versionName = appVersionName
 
         buildConfigField("int", "BUILD_NUMBER", "$appVersionCode")
+        buildConfigField("int", "RELEASE_NUMBER", "$appReleaseNumber")
         buildConfigField("String", "UPDATE_REPO_SLUG", "\"$updateRepoSlug\"")
         buildConfigField(
             "long", "BUILD_TIME",
@@ -179,6 +207,21 @@ dependencies {
 
     testImplementation(libs.junit)
     testImplementation(libs.kxml2)
+}
+
+// Prints the resolved version triple (used by CI logs and the release
+// checklist):  ./gradlew -q :app:printVersion
+tasks.register("printVersion") {
+    group = "help"
+    description = "Prints versionName / release number / build number of this build."
+    val name = appVersionName
+    val release = appReleaseNumber
+    val code = appVersionCode
+    doLast {
+        println("versionName=$name")
+        println("releaseNumber=$release")
+        println("versionCode=$code")
+    }
 }
 
 tasks.withType<Test>().configureEach {

@@ -25,6 +25,7 @@
 | Catch-up | `player/Catchup.kt` (+ `CatchupTest`) |
 | Самообновление | `data/repo/UpdateRepository.kt`, `scripts/make_update_manifest.py` |
 | CI/подпись | `.github/workflows/android.yml`, `keystore/`, `app/build.gradle.kts` |
+| Версии и релизы | `version.properties`, `scripts/version.sh`, `scripts/record_release.py`, [04-RELEASE.md](04-RELEASE.md) |
 
 ## Договорённости
 
@@ -44,12 +45,17 @@
 - **Коммиты**: `feat:/fix:/docs:/ci:/chore:` (conventional-ish), одно логическое
   изменение — один коммит.
 - **versionCode руками не трогаем** — его назначает CI (run_number).
+- **versionName руками не трогаем** — схема `мажор.минор.<номер релиза>`,
+  patch считает CI по тегам (`scripts/version.sh`). Менять можно только
+  `VERSION_MAJOR`/`VERSION_MINOR` в `version.properties`.
 
 ## Как выпускать версии
 
-Тег `vX.Y.Z` → автоматический Release с подписанным APK + `app-update.json` →
-приложения пользователей сами увидят обновление. Полный процесс:
-[04-RELEASE.md](04-RELEASE.md). Всегда обновляйте `CHANGELOG.md`.
+Мерж в `main` → CI сам присваивает следующий номер релиза, ставит тег `vX.Y.N`
+и публикует Release с подписанным APK + `app-update.json` → приложения
+пользователей сами увидят обновление. Нужна конкретная версия — поставьте тег
+`vX.Y.Z` вручную. Полный процесс: [04-RELEASE.md](04-RELEASE.md). Всегда
+обновляйте `CHANGELOG.md` (таблицу «История релизов» ведёт CI).
 
 ## Критические точки (легко сломать)
 
@@ -59,7 +65,8 @@
    принудительная переустановка у всех пользователей.
 3. **`app-update.json` схема** — `versionCode` обязателен и это критерий
    обновления; не меняйте имена полей без обратной совместимости (старые
-   приложения должны уметь читать новый манифест).
+   приложения должны уметь читать новый манифест). Поля можно только добавлять
+   (так добавился `releaseNumber`).
 4. **applicationId** (`com.iptvplayer.app`) менять нельзя без миграции
    самообновления — старые приложения не увидят новые версии.
 5. **Room-версия** — любое изменение сущностей = миграция или потеря данных.
