@@ -5,6 +5,7 @@ import android.content.ComponentName
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
+import androidx.media3.common.MimeTypes
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.session.MediaController
@@ -174,7 +175,10 @@ class PlayerViewModel(app: Application) : AndroidViewModel(app) {
         val request = PlayRequest(
             url = channel.url,
             title = channel.name,
-            mimeType = MediaItems.guessMime(channel.url),
+            // IPTV live endpoints frequently omit .m3u8/.ts in the URL. Without
+            // an explicit type Media3 may reject the item before making a request.
+            mimeType = MediaItems.guessMime(channel.url)
+                ?: if (isLive) MimeTypes.APPLICATION_M3U8 else null,
             headers = headers,
             startPositionMs = state.startMs,
             isLive = isLive,
