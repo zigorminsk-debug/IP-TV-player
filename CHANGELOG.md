@@ -23,6 +23,25 @@
 - R8/minify
 - Глобальные избранное и «Недавно смотрел»
 
+## [1.0.3] — релиз #3
+
+### Added
+- **`StreamSniffer`** (`player/StreamSniffer.kt`) — классификатор URL потоков:
+  схема (`udp`/`rtp`/`rtsp`/`rtmp`/`file`/`content`), тип ресурса по расширению
+  (HLS, DASH, «сырой» MPEG-TS, прогрессивные видео/аудио), догадка о MIME-типе
+  и флаги `isAdaptive` / `isMulticast` / `requiresCustomDataSource` /
+  `needsContentSniffing`. MIME-таблица — совместимое надмножество
+  `MediaItems.guessMime` (паритет закреплён тестом).
+- **`EpgCatalog`** (`data/epg/EpgCatalog.kt`) — in-memory индекс EPG без
+  Android/Room-зависимостей: каналы и передачи, сопоставление по tvg-id /
+  display-name (регистр, ё, разделители, суффиксы HD/4K/UHD/HEVC…),
+  «сейчас/далее», прогресс текущей передачи, расписание за окно и поиск по
+  названиям с фильтром по времени и лимитом.
+- Юнит-тесты **`StreamSnifferTest`** и **`EpgCatalogTest`** (`app/src/test`) —
+  схемы и расширения потоков, паритет MIME c `MediaItems`, границы интервалов,
+  разрывы расписания, дедупликация, нормализация имён (ё, регистр, суффиксы
+  качества) и поиск передач.
+
 ## [1.0.2] — релиз #2
 
 ### Changed
