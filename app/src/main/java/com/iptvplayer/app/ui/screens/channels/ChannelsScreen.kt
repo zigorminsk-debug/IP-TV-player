@@ -686,13 +686,4 @@ private fun ChannelRowItem(
         }
     }
 }
-showLock) {
-            Icon(
-                Icons.Filled.Lock,
-                contentDescription = stringResource(R.string.locked),
-                tint = MaterialTheme.colorScheme.error,
-                modifier = Modifier.size(18.dp),
-            )
-        }
-    }
-}
+
