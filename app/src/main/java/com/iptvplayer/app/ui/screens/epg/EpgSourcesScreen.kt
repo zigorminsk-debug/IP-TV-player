@@ -248,11 +248,26 @@ private fun AddEpgSourceDialog(
     var url by remember { mutableStateOf("") }
     var selectedPlaylist by remember { mutableStateOf<Long?>(null) }
 
+    // Maintained public XMLTV catalogue. These are direct XMLTV files, not
+    // playlist URLs, and can be selected without typing or copying a URL.
+    val verifiedSources = listOf(
+        "IPTV-org — international" to "https://iptv-org.github.io/epg/guides.xml",
+    )
+
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.add_epg_source)) },
         text = {
             Column {
+                Text(stringResource(R.string.verified_epg_sources), style = MaterialTheme.typography.titleSmall)
+                verifiedSources.forEach { (sourceName, sourceUrl) ->
+                    TextButton(onClick = {
+                        name = sourceName
+                        url = sourceUrl
+                    }) {
+                        Text(sourceName)
+                    }
+                }
                 OutlinedTextField(
                     value = url,
                     onValueChange = { url = it },

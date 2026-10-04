@@ -145,6 +145,7 @@
     <string name="epg_sources">EPG sources</string>
     <string name="epg_sources_subtitle">XMLTV programme guides</string>
     <string name="add_epg_source">Add EPG source</string>
+    <string name="verified_epg_sources">Verified sources</string>
     <string name="epg_sources_empty">No EPG sources</string>
     <string name="epg_sources_empty_hint">Add an XMLTV url to get the programme guide for your channels.</string>
     <string name="epg_global">All playlists</string>
