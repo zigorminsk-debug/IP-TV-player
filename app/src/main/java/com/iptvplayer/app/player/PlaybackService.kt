@@ -113,9 +113,12 @@ class PlaybackService : MediaSessionService() {
         val uri = item.localConfiguration?.uri ?: return item
         val extras = item.requestMetadata.extras
 
-        // Per-item headers are attached to the MediaItem and forwarded by
-        // Media3 in the DataSpec. Never mutate the shared factory here: doing
-        // so leaks Referer/User-Agent from one channel into the next one.
+        val headers = extras?.getSerializable(MediaItems.EXTRA_HEADERS)
+        if (headers is Map<*, *>) {
+            val map = headers.entries.associate { (k, v) -> k.toString() to v.toString() }
+            if (map.isNotEmpty()) httpFactory.setDefaultRequestProperties(map)
+        }
+
         val mime = extras?.getString(MediaItems.EXTRA_MIME) ?: MediaItems.guessMime(uri.toString())
 
         // Title/metadata are already attached to the item by the UI.
