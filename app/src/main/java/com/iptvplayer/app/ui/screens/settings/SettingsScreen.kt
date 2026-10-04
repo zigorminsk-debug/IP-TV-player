@@ -98,6 +98,8 @@ class SettingsViewModel(app: Application) : AndroidViewModel(app) {
 
     fun setTheme(v: String) = launch { c.settings.setTheme(v) }
     fun setShowLogos(v: Boolean) = launch { c.settings.setShowLogos(v) }
+    fun setChannelFontScale(v: Int) = launch { c.settings.setChannelFontScale(v) }
+    fun setProgrammeFontScale(v: Int) = launch { c.settings.setProgrammeFontScale(v) }
     fun setAudioLang(v: String) = launch { c.settings.setPreferredAudioLang(v) }
     fun setSubsLang(v: String) = launch { c.settings.setPreferredSubsLang(v) }
     fun setDefaultSort(v: com.iptvplayer.app.data.model.ChannelSort) =
@@ -227,6 +229,8 @@ fun SettingsScreen(navController: NavHostController, appVm: AppViewModel) {
                     checked = settings.showLogos,
                     onChange = vm::setShowLogos,
                 )
+                FontScaleRow(stringResource(R.string.channel_font_size), settings.channelFontScale, vm::setChannelFontScale)
+                FontScaleRow(stringResource(R.string.programme_font_size), settings.programmeFontScale, vm::setProgrammeFontScale)
                 SettingsRow(
                     icon = Icons.Filled.Tune,
                     title = stringResource(R.string.audio_lang),
@@ -545,6 +549,18 @@ private fun SwitchRow(
             }
         }
         Switch(checked = checked, onCheckedChange = onChange)
+    }
+}
+
+@Composable
+private fun FontScaleRow(title: String, value: Int, onChange: (Int) -> Unit) {
+    Column(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+        Text(title, style = MaterialTheme.typography.bodyLarge)
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            listOf(80, 100, 120, 150, 180).forEach { size ->
+                FilterChip(selected = value == size, onClick = { onChange(size) }, label = { Text("${size}%") })
+            }
+        }
     }
 }
 

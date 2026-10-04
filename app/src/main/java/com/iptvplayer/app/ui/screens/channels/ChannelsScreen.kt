@@ -76,6 +76,7 @@ import com.iptvplayer.app.data.model.ChannelSort
 import com.iptvplayer.app.data.model.NowNext
 import com.iptvplayer.app.data.model.PlaylistType
 import com.iptvplayer.app.di.ServiceLocator
+import com.iptvplayer.app.data.repo.SettingsRepository
 import com.iptvplayer.app.player.ExternalPlayer
 import com.iptvplayer.app.ui.Routes
 import com.iptvplayer.app.ui.components.ChannelLogo
@@ -240,6 +241,7 @@ class ChannelsViewModel(app: Application, savedState: SavedStateHandle) : Androi
 fun ChannelsScreen(playlistId: Long, navController: NavHostController) {
     val vm: ChannelsViewModel = viewModel()
     val context = LocalContext.current
+    val appSettings by ServiceLocator.instance.settings.settings.collectAsState(initial = SettingsRepository.DEFAULTS)
 
     val playlist by vm.playlist.collectAsState()
     val rows by vm.rows.collectAsState()
@@ -482,6 +484,8 @@ fun ChannelsScreen(playlistId: Long, navController: NavHostController) {
                         row = row,
                         nowNext = nowNext[row.channel.uid],
                         showLogos = showLogos,
+                        channelFontScale = appSettings.channelFontScale,
+                        programmeFontScale = appSettings.programmeFontScale,
                         showLock = parentalEnabled && row.locked,
                         showFavorite = row.channel.isFavorite,
                         onClick = { onChannelClick(row.channel) },
@@ -621,6 +625,8 @@ private fun ChannelRowItem(
     row: ChannelsViewModel.Row,
     nowNext: NowNext?,
     showLogos: Boolean,
+    channelFontScale: Int,
+    programmeFontScale: Int,
     showLock: Boolean,
     showFavorite: Boolean,
     onClick: () -> Unit,
@@ -651,7 +657,7 @@ private fun ChannelRowItem(
         Column(Modifier.weight(1f)) {
             Text(
                 text = row.channel.name,
-                style = MaterialTheme.typography.titleSmall,
+                style = MaterialTheme.typography.titleSmall.copy(fontSize = MaterialTheme.typography.titleSmall.fontSize * channelFontScale / 100f),
                 fontWeight = FontWeight.Medium,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -660,7 +666,7 @@ private fun ChannelRowItem(
             if (now != null) {
                 Text(
                     text = "${Format.time(now.start)}  ${now.title}",
-                    style = MaterialTheme.typography.bodySmall,
+                    style = MaterialTheme.typography.bodySmall.copy(fontSize = MaterialTheme.typography.bodySmall.fontSize * programmeFontScale / 100f),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,

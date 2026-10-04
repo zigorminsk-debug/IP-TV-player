@@ -23,6 +23,8 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(na
 data class AppSettings(
     val theme: String, // SYSTEM | DARK | LIGHT
     val showLogos: Boolean,
+    val channelFontScale: Int,
+    val programmeFontScale: Int,
     val preferredAudioLang: String,
     val preferredSubsLang: String,
     val defaultSort: ChannelSort,
@@ -39,6 +41,8 @@ class SettingsRepository(private val context: Context) {
     private object Keys {
         val THEME = stringPreferencesKey("theme")
         val SHOW_LOGOS = booleanPreferencesKey("show_logos")
+        val CHANNEL_FONT_SCALE = intPreferencesKey("channel_font_scale")
+        val PROGRAMME_FONT_SCALE = intPreferencesKey("programme_font_scale")
         val PREFERRED_AUDIO_LANG = stringPreferencesKey("preferred_audio_lang")
         val PREFERRED_SUBS_LANG = stringPreferencesKey("preferred_subs_lang")
         val DEFAULT_SORT = stringPreferencesKey("default_sort")
@@ -56,6 +60,8 @@ class SettingsRepository(private val context: Context) {
         val DEFAULTS = AppSettings(
         theme = "SYSTEM",
         showLogos = true,
+        channelFontScale = 100,
+        programmeFontScale = 100,
         preferredAudioLang = "",
         preferredSubsLang = "",
         defaultSort = ChannelSort.ORDER,
@@ -72,6 +78,8 @@ class SettingsRepository(private val context: Context) {
         AppSettings(
             theme = p[Keys.THEME] ?: DEFAULTS.theme,
             showLogos = p[Keys.SHOW_LOGOS] ?: DEFAULTS.showLogos,
+            channelFontScale = p[Keys.CHANNEL_FONT_SCALE] ?: DEFAULTS.channelFontScale,
+            programmeFontScale = p[Keys.PROGRAMME_FONT_SCALE] ?: DEFAULTS.programmeFontScale,
             preferredAudioLang = p[Keys.PREFERRED_AUDIO_LANG] ?: DEFAULTS.preferredAudioLang,
             preferredSubsLang = p[Keys.PREFERRED_SUBS_LANG] ?: DEFAULTS.preferredSubsLang,
             defaultSort = runCatching {
@@ -88,6 +96,8 @@ class SettingsRepository(private val context: Context) {
 
     suspend fun setTheme(value: String) = context.dataStore.edit { it[Keys.THEME] = value }
     suspend fun setShowLogos(value: Boolean) = context.dataStore.edit { it[Keys.SHOW_LOGOS] = value }
+    suspend fun setChannelFontScale(value: Int) = context.dataStore.edit { it[Keys.CHANNEL_FONT_SCALE] = value.coerceIn(80, 180) }
+    suspend fun setProgrammeFontScale(value: Int) = context.dataStore.edit { it[Keys.PROGRAMME_FONT_SCALE] = value.coerceIn(80, 180) }
     suspend fun setPreferredAudioLang(value: String) =
         context.dataStore.edit { it[Keys.PREFERRED_AUDIO_LANG] = value }
     suspend fun setPreferredSubsLang(value: String) =

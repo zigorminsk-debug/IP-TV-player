@@ -113,12 +113,15 @@ class PlaybackService : MediaSessionService() {
         val uri = item.localConfiguration?.uri ?: return item
         val extras = item.requestMetadata.extras
 
-        // Per-item HTTP headers (from #EXTVLCOPT etc.)
+        // The factory is shared by the service. Clear properties first so a
+        // Referer/User-Agent from the previous channel cannot leak here.
         val headers = extras?.getSerializable(MediaItems.EXTRA_HEADERS)
-        if (headers is Map<*, *>) {
-            val map = headers.entries.associate { (k, v) -> k.toString() to v.toString() }
-            if (map.isNotEmpty()) httpFactory.setDefaultRequestProperties(map)
+        val map = if (headers is Map<*, *>) {
+            headers.entries.associate { (k, v) -> k.toString() to v.toString() }
+        } else {
+            emptyMap()
         }
+        httpFactory.setDefaultRequestProperties(map)
 
         val mime = extras?.getString(MediaItems.EXTRA_MIME) ?: MediaItems.guessMime(uri.toString())
 

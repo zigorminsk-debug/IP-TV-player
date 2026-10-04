@@ -174,6 +174,8 @@ class PlayerViewModel(app: Application) : AndroidViewModel(app) {
         val request = PlayRequest(
             url = channel.url,
             title = channel.name,
+            // Leave extension-less live URLs unspecified: Media3 will use the
+            // response Content-Type. Forcing HLS breaks providers serving raw TS.
             mimeType = MediaItems.guessMime(channel.url),
             headers = headers,
             startPositionMs = state.startMs,

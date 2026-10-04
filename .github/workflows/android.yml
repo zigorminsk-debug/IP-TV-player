@@ -205,14 +205,14 @@ jobs:
 
       # ------------------------------------------------------------- release
       - name: Generate app-update.json and checksums
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main'
         env:
           VERSION: ${{ steps.ver.outputs.name }}
           BUILD: ${{ github.run_number }}
         run: |
           set -euo pipefail
           APK="IP-TV-Player_${VERSION}_build${BUILD}_release.apk"
-          TAG="${GITHUB_REF#refs/tags/}"
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then TAG="${GITHUB_REF#refs/tags/}"; else TAG="auto-v${VERSION}-build${BUILD}"; fi
           NOTES="$(git tag -l --format='%(contents)' "$TAG")"
           python3 scripts/make_update_manifest.py \
             --repo "$GITHUB_REPOSITORY" \
@@ -228,9 +228,10 @@ jobs:
           cat dist/app-update.json
 
       - name: Create GitHub Release
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ github.ref_type == 'tag' && github.ref_name || format('auto-v{0}-build{1}', steps.ver.outputs.name, github.run_number) }}
           files: |
             dist/*.apk
             dist/*.aab
