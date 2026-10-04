@@ -125,7 +125,44 @@ jobs:
           APP_VERSION_NAME: ${{ steps.ver.outputs.name }}
         run: |
           chmod +x gradlew
-          ./gradlew testDebugUnitTest assembleDebug assembleRelease bundleRelease --stacktrace
+          set -o pipefail
+          ./gradlew testDebugUnitTest assembleDebug assembleRelease bundleRelease --stacktrace 2>&1 | tee build-output.log
+
+      # On failure, publish a compact error digest to the ci/logs branch so
+      # it can be fetched through the GitHub REST API (api.github.com).
+      - name: Publish error digest (on failure)
+        if: failure()
+        run: |
+          set -euo pipefail
+          mkdir -p ci-logs
+          {
+            echo "# Build failure digest — run ${{ github.run_number }} (${{ github.sha }})"
+            echo
+            echo "## Kotlin / javac errors"
+            echo '```'
+            grep -E "^e: |error: " build-output.log | head -250 || echo "(none captured)"
+            echo '```'
+            echo
+            echo "## What went wrong"
+            echo '```'
+            sed -n '/What went wrong/,/^\* Try/p' build-output.log | head -80 || true
+            echo '```'
+            echo
+            echo "## Failed tasks"
+            echo '```'
+            grep -E "^> Task .* FAILED|Execution failed for task" build-output.log | sort -u | head -60 || true
+            echo '```'
+            echo
+            echo "## Log tail (last 120 lines)"
+            echo '```'
+            tail -120 build-output.log
+            echo '```'
+          } > "ci-logs/run-${{ github.run_number }}.md"
+          git config user.name "ci-bot"
+          git config user.email "actions@github.com"
+          git add ci-logs
+          git commit -q -m "ci: error digest for run ${{ github.run_number }}"
+          git push --force origin HEAD:refs/heads/ci/logs
 
       - name: Collect and rename artifacts
         id: artifacts
